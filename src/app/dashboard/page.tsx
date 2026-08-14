@@ -15,6 +15,26 @@ const quickActions = [
     description: "See your personalized learning plan.",
   },
   {
+    href: "/mentor",
+    title: "AI Mentor",
+    description: "Get guidance from your AI career mentor.",
+  },
+  {
+    href: "/community",
+    title: "Community",
+    description: "Join study groups and learn with peers.",
+  },
+  {
+    href: "/certificates",
+    title: "Certificates",
+    description: "View your earned career certificates.",
+  },
+  {
+    href: "/readiness",
+    title: "Career Readiness",
+    description: "Check how ready you are for the job market.",
+  },
+  {
     href: "/rewards",
     title: "Rewards",
     description: "Check in daily and collect XP and badges.",
@@ -45,6 +65,10 @@ export default async function DashboardPage() {
     created_at: string;
   }[] = [];
   let assessment: { status: string } | null = null;
+  let readiness: {
+    overall: number;
+    suggestions: string[];
+  } | null = null;
 
   try {
     const supabase = await createClient();
@@ -53,7 +77,12 @@ export default async function DashboardPage() {
     } = await supabase.auth.getUser();
     user = authUser ?? null;
     if (user) {
-      const [{ data: p }, { data: t }, { data: a }] = await Promise.all([
+      const [
+        { data: p },
+        { data: t },
+        { data: a },
+        { data: readinessRow },
+      ] = await Promise.all([
         supabase
           .from("profiles")
           .select(
@@ -72,10 +101,16 @@ export default async function DashboardPage() {
           .select("status")
           .eq("user_id", user.id)
           .maybeSingle(),
+        supabase
+          .from("career_readiness")
+          .select("overall, suggestions")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
       profile = p;
       transactions = t ?? [];
       assessment = a;
+      readiness = readinessRow ?? null;
     }
   } catch {}
 
@@ -184,6 +219,32 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {readiness && (
+        <div className="mt-6 flex flex-col items-start justify-between gap-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-6 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Career Readiness</h2>
+            <p className="mt-1 text-sm text-emerald-200">
+              Your overall readiness score is{" "}
+              <span className="font-semibold">{readiness.overall}%</span>
+              {readiness.suggestions?.length ? (
+                <>
+                  {" "}with {readiness.suggestions.length} area
+                  {readiness.suggestions.length === 1 ? "" : "s"} to work on.
+                </>
+              ) : (
+                ". Keep it up!"
+              )}
+            </p>
+          </div>
+          <Link
+            href="/readiness"
+            className="shrink-0 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+          >
+            View Readiness
+          </Link>
+        </div>
+      )}
 
       <h2 className="mt-12 text-xl font-semibold text-white">Recent XP activity</h2>
       {transactions.length === 0 ? (

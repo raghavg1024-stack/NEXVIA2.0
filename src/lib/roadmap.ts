@@ -2,6 +2,9 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { XP_RULES } from "@/lib/data";
+import { awardCertificate } from "@/lib/certificates";
+import { grantReward } from "@/lib/rewards";
 import type {
   Course,
   Milestone,
@@ -1220,6 +1223,10 @@ export async function updateMilestoneStatus(
   if (error) return { ok: false, message: error.message };
 
   if (target === "completed") {
+    try {
+      await grantReward("xp", XP_RULES.milestone_completed, "Milestone completed");
+    } catch {}
+
     const next = await siblingMilestone(
       supabase,
       milestone.roadmap_id,
@@ -1240,10 +1247,26 @@ export async function updateMilestoneStatus(
       .neq("status", "completed");
 
     if (remaining !== null && remaining.length === 0) {
+      const roadmapId = milestone.roadmap_id;
       await supabase
         .from("roadmaps")
         .update({ status: "completed" })
-        .eq("id", milestone.roadmap_id);
+        .eq("id", roadmapId);
+
+      try {
+        await grantReward("xp", XP_RULES.roadmap_completed, "Roadmap completed");
+      } catch {}
+
+      try {
+        const { data: completedRoadmap } = await supabase
+          .from("roadmaps")
+          .select("career_title")
+          .eq("id", roadmapId)
+          .single();
+        if (completedRoadmap?.career_title) {
+          await awardCertificate(roadmapId, completedRoadmap.career_title);
+        }
+      } catch {}
     }
   }
 
@@ -1303,6 +1326,12 @@ export async function updateCourseStatus(
     .update({ status: target })
     .eq("id", course.id);
   if (error) return { ok: false, message: error.message };
+
+  if (target === "completed") {
+    try {
+      await grantReward("xp", XP_RULES.course_completed, "Course completed");
+    } catch {}
+  }
 
   revalidatePath("/roadmap");
   return { ok: true };

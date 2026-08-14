@@ -23,6 +23,10 @@ export const metadata: Metadata = {
 const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/roadmap", label: "My Roadmap" },
+  { href: "/mentor", label: "AI Mentor" },
+  { href: "/community", label: "Community" },
+  { href: "/certificates", label: "Certificates" },
+  { href: "/readiness", label: "Career Readiness" },
   { href: "/rewards", label: "Rewards" },
   { href: "/profile", label: "Profile" },
 ];

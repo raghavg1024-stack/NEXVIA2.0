@@ -173,3 +173,58 @@ export interface CareerReadiness {
   overall: number;
   suggestions: string[];
 }
+
+export interface Certificate {
+  id: UUID;
+  user_id: UUID;
+  roadmap_id: UUID;
+  title: string;
+  credential_id: string;
+  issued_at: string;
+}
+
+export type MentorRole = "user" | "assistant";
+
+export interface MentorMessage {
+  id: UUID;
+  user_id: UUID;
+  role: MentorRole;
+  content: string;
+  created_at: string;
+}
+
+export interface StudyGroup {
+  id: UUID;
+  name: string;
+  description: string | null;
+  owner_id: UUID;
+  created_at: string;
+}
+
+export interface StudyGroupMember {
+  group_id: UUID;
+  user_id: UUID;
+  joined_at: string;
+}
+
+export interface StudyGroupMessage {
+  id: UUID;
+  group_id: UUID;
+  user_id: UUID;
+  user_name: string | null;
+  content: string;
+  created_at: string;
+}
+
+export interface CareerReadinessScore {
+  id: UUID;
+  user_id: UUID;
+  technical_skills: number;
+  communication: number;
+  projects: number;
+  resume_quality: number;
+  interview_readiness: number;
+  overall: number;
+  suggestions: string[];
+  updated_at: string;
+}

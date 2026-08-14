@@ -10,6 +10,7 @@ export const XP_RULES = {
   project_submitted: 80,
   project_approved: 150,
   daily_check_in: 10,
+  mentor_first_message: 15,
   milestone_completed: 200,
   roadmap_completed: 1000,
   certificate_earned: 300,

@@ -37,7 +37,11 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/assessment") ||
     request.nextUrl.pathname.startsWith("/roadmap") ||
-    request.nextUrl.pathname.startsWith("/profile");
+    request.nextUrl.pathname.startsWith("/profile") ||
+    request.nextUrl.pathname.startsWith("/mentor") ||
+    request.nextUrl.pathname.startsWith("/community") ||
+    request.nextUrl.pathname.startsWith("/certificates") ||
+    request.nextUrl.pathname.startsWith("/readiness");
 
   if (user && isAuthRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -56,6 +60,10 @@ export const config = {
     "/assessment/:path*",
     "/roadmap/:path*",
     "/profile/:path*",
+    "/mentor/:path*",
+    "/community/:path*",
+    "/certificates/:path*",
+    "/readiness/:path*",
     "/login",
     "/signup",
   ],

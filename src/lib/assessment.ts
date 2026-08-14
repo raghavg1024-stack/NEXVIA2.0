@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ASSESSMENT_QUESTIONS, CAREERS, matchCareers } from "@/lib/data";
+import { ASSESSMENT_QUESTIONS, CAREERS, XP_RULES, matchCareers } from "@/lib/data";
+import { grantReward } from "@/lib/rewards";
 import { createClient } from "@/lib/supabase/server";
 import type {
   AnalysisReport,
@@ -282,6 +283,10 @@ export async function completeAssessment(
   revalidatePath("/analysis");
   revalidatePath("/recommendations");
 
+  try {
+    await grantReward("xp", XP_RULES.assessment_completed, "Assessment completed");
+  } catch {}
+
   return {
     report: reportRow as unknown as AnalysisReport,
     recommendations: (recInserted ?? []) as unknown as CareerRecommendation[],
@@ -340,6 +345,10 @@ export async function selectCareer(careerId: string, recommendationId: string) {
       throw new Error(error.message);
     }
   }
+
+  try {
+    await grantReward("xp", XP_RULES.career_selected, "Career selected");
+  } catch {}
 
   revalidatePath("/roadmap");
   redirect("/roadmap");

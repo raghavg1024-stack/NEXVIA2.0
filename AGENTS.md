@@ -38,3 +38,12 @@ Stack: Next.js 16 (App Router, `src/`) + TypeScript (strict) + Tailwind CSS v4 +
 - Lints: `npm run lint`
 - Builds: `npm run build`
 - No secrets in code; env via `.env.local` (copy `.env.example`).
+
+## Sprint 2 ownership (feature agents own their folder + `src/lib/<feature>.ts`)
+
+- `supabase/migrations/0003_features.sql` — Database agent (certificates, mentor_messages, study_groups, study_group_members, study_group_messages, career_readiness + RLS).
+- `src/app/certificates/` + `src/app/readiness/` + `src/lib/certificates.ts` + `src/lib/readiness.ts` — Certificates & Career Readiness agent.
+- `src/app/mentor/` + `src/lib/mentor.ts` — AI Mentor agent (rule-based, no API keys).
+- `src/app/community/` + `src/lib/community.ts` — Community agent.
+- `src/app/layout.tsx`, `src/app/dashboard/page.tsx`, `src/proxy.ts` (matcher only), XP wiring in `src/lib/{roadmap,assessment,rewards}.ts`, `src/lib/data.ts` XP_RULES additions — Integration agent (single owner).
+- `src/lib/types.ts` — shared; sprint 2 types already added by lead; only Integration agent may extend.
