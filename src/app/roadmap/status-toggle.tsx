@@ -18,7 +18,7 @@ export function CourseToggle({ course }: { course: Course }) {
 
   if (course.status === "completed") {
     return (
-      <span className="text-sm font-medium text-emerald-400">Completed</span>
+      <span className="text-sm font-medium text-emerald-600">Completed</span>
     );
   }
 
@@ -34,14 +34,14 @@ export function CourseToggle({ course }: { course: Course }) {
         disabled={pending}
         className={
           next === "in_progress"
-            ? "rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
-            : "rounded-lg border border-emerald-500/30 bg-emerald-600/10 px-3 py-1.5 text-sm font-medium text-emerald-400 transition-colors hover:bg-emerald-600/20 disabled:opacity-50"
+            ? "rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+            : "rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
         }
       >
         {next === "in_progress" ? "Start" : "Mark complete"}
       </button>
       {state.ok === false && state.message ? (
-        <p className="mt-1 text-xs text-red-400">{state.message}</p>
+        <p className="mt-1 text-xs text-red-600">{state.message}</p>
       ) : null}
     </form>
   );
@@ -71,7 +71,7 @@ export function MilestoneAction({
 
   if (!next) {
     return (
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-slate-500">
         {status === "locked"
           ? "Complete the previous milestone to unlock this one."
           : "Complete all courses to finish this milestone."}
@@ -86,12 +86,12 @@ export function MilestoneAction({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg border border-indigo-500/40 bg-indigo-600/10 px-3 py-1.5 text-sm font-medium text-indigo-400 transition-colors hover:bg-indigo-600/20 disabled:opacity-50"
+        className="rounded-lg border border-accent/40 bg-accent-soft px-3 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white disabled:opacity-50"
       >
         {next === "in_progress" ? "Start milestone" : "Mark milestone complete"}
       </button>
       {state.ok === false && state.message ? (
-        <p className="mt-1 text-xs text-red-400">{state.message}</p>
+        <p className="mt-1 text-xs text-red-600">{state.message}</p>
       ) : null}
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 import { ASSESSMENT_QUESTIONS } from "@/lib/data";
 import type { AssessmentResponse } from "@/lib/types";
 import { completeAssessment, getAssessment, saveProgress } from "@/lib/assessment";
@@ -115,25 +116,27 @@ export default function AssessmentPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-slate-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-indigo-500" />
-        <p className="mt-4 text-sm text-slate-400">Loading your assessment…</p>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-slate-700">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-accent" />
+        <p className="mt-4 text-sm text-slate-500">Loading your assessment…</p>
       </main>
     );
   }
 
   if (error && !question) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-slate-100">
-        <h1 className="text-xl font-semibold text-white">Something went wrong</h1>
-        <p className="mt-2 text-sm text-slate-400">{error}</p>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-slate-700">
+        <h1 className="font-display text-xl uppercase tracking-tight text-slate-900">
+          Something went wrong
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">{error}</p>
         <button
           onClick={() => {
             setLoading(true);
             setError(null);
             fetchAssessment();
           }}
-          className="mt-6 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500"
+          className="mt-6 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
         >
           Try again
         </button>
@@ -142,30 +145,44 @@ export default function AssessmentPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-slate-950 px-6 py-10 text-slate-100">
+    <main className="flex min-h-screen flex-col bg-background px-6 py-10 text-slate-700">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-semibold text-white">Career Discovery Assessment</h1>
-            <p className="text-sm text-slate-400">
+            <h1 className="font-display text-lg uppercase tracking-tight text-slate-900">
+              Career Discovery Assessment
+            </h1>
+            <p className="text-sm text-slate-500">
               Question {index + 1} of {total}
             </p>
           </div>
-          <span className="text-sm font-medium text-indigo-400">{progress}%</span>
+          <span className="text-sm font-medium text-accent">{progress}%</span>
         </header>
 
-        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-800">
-          <div
-            className="h-2 rounded-full bg-indigo-600 transition-all duration-300"
-            style={{ width: `${progress}%` }}
+        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+          <motion.div
+            className="h-2 rounded-full bg-accent"
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
           />
         </div>
 
-        <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-8">
-          <span className="inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-indigo-300">
-            {question.category.replace("_", " ")}
-          </span>
-          <h2 className="mt-4 text-xl font-semibold text-white sm:text-2xl">{question.text}</h2>
+        <div className="mt-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={question.id}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="rounded-2xl border border-line bg-card p-6 sm:p-8"
+            >
+              <span className="inline-block rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-medium uppercase tracking-wider text-accent">
+                {question.category.replace("_", " ")}
+              </span>
+              <h2 className="mt-4 font-display text-xl uppercase tracking-tight text-slate-900 sm:text-2xl">
+                {question.text}
+              </h2>
 
           <div className="mt-8">
             {question.type === "rating" && (
@@ -176,8 +193,8 @@ export default function AssessmentPage() {
                     onClick={() => setAnswer(value)}
                     className={`h-12 w-12 rounded-xl text-lg font-semibold transition ${
                       currentAnswer === value
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
-                        : "border border-slate-700 bg-slate-800 text-slate-300 hover:border-indigo-500 hover:text-white"
+                        ? "bg-accent text-white shadow-lg shadow-accent/30"
+                        : "border border-line bg-card text-slate-700 hover:border-accent hover:text-slate-900"
                     }`}
                   >
                     {value}
@@ -194,8 +211,8 @@ export default function AssessmentPage() {
                     onClick={() => setAnswer(option)}
                     className={`rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition ${
                       currentAnswer === option
-                        ? "border-indigo-500 bg-indigo-600 text-white"
-                        : "border-slate-700 bg-slate-800 text-slate-300 hover:border-indigo-500 hover:text-white"
+                        ? "border-accent bg-accent text-white"
+                        : "border-line bg-card text-slate-700 hover:border-accent hover:text-slate-900"
                     }`}
                   >
                     {option}
@@ -214,8 +231,8 @@ export default function AssessmentPage() {
                       onClick={() => toggleOption(option)}
                       className={`rounded-full border px-4 py-2.5 text-sm font-medium transition ${
                         isSelected
-                          ? "border-indigo-500 bg-indigo-600 text-white"
-                          : "border-slate-700 bg-slate-800 text-slate-300 hover:border-indigo-500 hover:text-white"
+                          ? "border-accent bg-accent text-white"
+                          : "border-line bg-card text-slate-700 hover:border-accent hover:text-slate-900"
                       }`}
                     >
                       {option}
@@ -225,10 +242,12 @@ export default function AssessmentPage() {
               </div>
             )}
           </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <p className="mt-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600">
             {error}
           </p>
         )}
@@ -237,7 +256,7 @@ export default function AssessmentPage() {
           <button
             onClick={handleBack}
             disabled={index === 0}
-            className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white disabled:opacity-40"
+            className="rounded-xl border border-line bg-card px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-40"
           >
             Back
           </button>
@@ -246,7 +265,7 @@ export default function AssessmentPage() {
             <button
               onClick={handleComplete}
               disabled={!hasAnswer || submitting}
-              className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-40"
+              className="rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-40"
             >
               {submitting ? "Finishing…" : "Complete Assessment"}
             </button>
@@ -254,7 +273,7 @@ export default function AssessmentPage() {
             <button
               onClick={handleNext}
               disabled={!hasAnswer}
-              className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-40"
+              className="rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-40"
             >
               Next
             </button>

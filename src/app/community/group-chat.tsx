@@ -26,19 +26,19 @@ export function GroupChat({ groupId }: { groupId: string }) {
         required
         maxLength={1000}
         placeholder="Write a message..."
-        className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none"
+        className="flex-1 rounded-xl border border-line bg-card px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
       />
       <button
         type="submit"
         disabled={pending}
-        className="shrink-0 rounded-xl bg-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-900/40 transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="shrink-0 rounded-xl bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Sending..." : "Send"}
       </button>
       {state.error && (
         <p
           aria-live="polite"
-          className="mt-2 w-full text-sm text-amber-400"
+          className="mt-2 w-full text-sm text-amber-600"
         >
           {state.error}
         </p>

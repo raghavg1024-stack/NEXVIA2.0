@@ -12,82 +12,82 @@ export default async function AnalysisPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
+    <main className="min-h-screen bg-background px-6 py-12 text-slate-700">
       <div className="mx-auto max-w-3xl">
         <header>
-          <p className="text-sm font-medium uppercase tracking-widest text-indigo-400">
-            Your Analysis
+          <p className="font-display text-sm uppercase tracking-widest text-accent">
+            01. Your Analysis
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">
+          <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-slate-900">
             How you learn, what you&apos;re great at, and where to grow
           </h1>
         </header>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <section className="rounded-2xl border border-line bg-card p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
               Learning style
             </h2>
-            <p className="mt-3 text-lg font-medium capitalize text-white">
+            <p className="mt-3 font-display text-lg capitalize text-slate-900">
               {analysisReport.learning_style}
             </p>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-500">
               We&apos;ll shape your roadmap around this.
             </p>
           </section>
 
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <section className="rounded-2xl border border-line bg-card p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
               Study capacity
             </h2>
-            <p className="mt-3 text-lg font-medium text-white">
+            <p className="mt-3 font-display text-lg text-slate-900">
               {analysisReport.study_capacity_hours} hours / week
             </p>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-500">
               Realistic time you can commit each week.
             </p>
           </section>
 
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:col-span-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <section className="rounded-2xl border border-line bg-card p-6 sm:col-span-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
               Recommended pace
             </h2>
-            <p className="mt-3 text-base text-white">{analysisReport.recommended_pace}</p>
+            <p className="mt-3 text-base text-slate-900">{analysisReport.recommended_pace}</p>
           </section>
 
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <section className="rounded-2xl border border-line bg-card p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
               Your strengths
             </h2>
             <ul className="mt-3 space-y-2.5">
               {analysisReport.strengths.map((strength) => (
-                <li key={strength} className="flex items-start gap-2.5 text-sm text-slate-200">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                <li key={strength} className="flex items-start gap-2.5 text-sm text-slate-700">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
                   {strength}
                 </li>
               ))}
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <section className="rounded-2xl border border-line bg-card p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
               Growth areas
             </h2>
             <ul className="mt-3 space-y-2.5">
               {analysisReport.growth_areas.map((area) => (
-                <li key={area} className="flex items-start gap-2.5 text-sm text-slate-200">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-500" />
+                <li key={area} className="flex items-start gap-2.5 text-sm text-slate-700">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
                   {area}
                 </li>
               ))}
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:col-span-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <section className="rounded-2xl border border-line bg-card p-6 sm:col-span-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
               Summary
             </h2>
-            <p className="mt-3 text-base leading-relaxed text-slate-200">
+            <p className="prose prose-slate prose-sm mt-3 max-w-none leading-relaxed text-slate-700">
               {analysisReport.summary}
             </p>
           </section>
@@ -96,7 +96,7 @@ export default async function AnalysisPage() {
         <div className="mt-10 flex justify-end">
           <Link
             href="/recommendations"
-            className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
+            className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             See my career matches
           </Link>

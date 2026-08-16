@@ -1,6 +1,7 @@
 # Career OS — Project State & Handover Document
 
 > Generated: 2026-08-14
+> Updated: 2026-08-14 (live DB wired up + login fixed)
 > Purpose: Full record of everything built, configured, and saved so nothing is lost if a window/chat is closed.
 
 ---
@@ -56,10 +57,39 @@ Check anytime with: `cd C:\Users\ragha\career-os && git log --oneline`
 | Project ref | `ufzsomqbndjggyswsnlg` |
 | MCP server | Configured + **OAuth authenticated successfully** ✅ |
 | Migrations written | `supabase/migrations/0001_init.sql`, `0002_storage.sql`, `0003_features.sql` |
-| Migrations applied to cloud DB | **NOT YET** — next step |
-| App env keys | **NOT YET** — `.env.local` still needs creating (or use MCP after restart) |
+| Migrations applied to cloud DB | **✅ APPLIED (2026-08-14)** — all 17 tables + seeds live |
+| App env keys | **✅ CREATED** — `C:\Users\ragha\career-os\.env.local` (URL + anon key) |
 
 Schema: 17 tables with Row-Level Security (profiles, assessments, analysis_reports, careers, career_recommendations, roadmaps, milestones, courses, xp_transactions, badges, user_badges, certificates, mentor_messages, study_groups, study_group_members, study_group_messages, career_readiness) + avatars storage bucket.
+
+Seed data verified live: 8 careers + 8 badges. Storage bucket `avatars` created.
+
+### Live DB / auth fix (2026-08-14)
+- **Login was broken** for two reasons: (1) tables didn't exist yet, (2) email unconfirmed.
+- Fixed: pushed all 3 migrations → confirmed email for `raghavg1024@gmail.com` → restored his profile row (`G.Raghav Kumar`, Level 1, 0 XP).
+- **User account**: `raghavg1024@gmail.com` (confirmed). User id: `ff680c31-060c-4e17-9385-95c7375d8c1b`.
+
+## 5. Session Log — 2026-08-14 (everything done today)
+
+| # | Action | Result |
+|---|--------|--------|
+| 1 | Read `docs/PROJECT_STATE.md` to restore context | ✅ |
+| 2 | Checked for `.env.local` + `node_modules` | `.env.local` missing, deps present |
+| 3 | Got Supabase URL + anon key via MCP | `https://ufzsomqbndjggyswsnlg.supabase.co` |
+| 4 | Created `C:\Users\ragha\career-os\.env.local` | ✅ URL + anon key saved |
+| 5 | Started dev server | ✅ `npm run dev` on port 3000 |
+| 6 | Diagnosed login failure from logs | `public.profiles` missing + "Email not confirmed" |
+| 7 | Confirmed `public` schema was **empty** | 0 tables |
+| 8 | **Pushed migration `0001_init`** via MCP | ✅ 11 core tables + RLS + seeds (8 careers, 8 badges) |
+| 9 | **Pushed migration `0002_storage`** via MCP | ✅ `avatars` bucket + policies |
+| 10 | **Pushed migration `0003_features`** via MCP | ✅ 6 feature tables + RLS |
+| 11 | Verified schema live | ✅ all 17 tables present, seeds verified |
+| 12 | Found user account unconfirmed | `raghavg1024@gmail.com` → `email_confirmed_at = null` |
+| 13 | Confirmed email in `auth.users` | ✅ login blocker removed |
+| 14 | Restored profile row (signup predated tables) | ✅ `G.Raghav Kumar`, Level 1, 0 XP |
+| 15 | Verified dev server still running | ✅ listening on port 3000 |
+
+**Not done yet (open items):** user still needs to log in and test the assessment → career → roadmap flow manually.
 
 ## 5. opencode Configuration (already saved)
 
@@ -73,9 +103,12 @@ Schema: 17 tables with Row-Level Security (profiles, assessments, analysis_repor
 
 ## 6. How the "Team" Is Structured
 
+> Run like a real office — the lead coordinates, specialist agents own their area, QA gates every change.
+
 | Role | Work |
 |------|------|
-| Agent A (DB) | SQL migrations + RLS + seeds |
+| **Lead (product owner / coordinator)** | Overall direction, app code, `proxy.ts`, integrations |
+| Agent A (DB / DBA) | SQL migrations + RLS + seeds (`supabase/migrations/`) |
 | Agent B (Auth) | signup/login/profile/callback |
 | Agent C (Assessment) | assessment wizard + analysis + career recs |
 | Agent D (Roadmap) | roadmap generation + status transitions |
@@ -83,15 +116,32 @@ Schema: 17 tables with Row-Level Security (profiles, assessments, analysis_repor
 | Agent F (QA) | review, lint, typecheck, build gate |
 | Sprint 2 agents | mentor, community, certificates, readiness, integration |
 
+**Office-style workflow used today:** Lead diagnosed → DB agent pushed migrations → Auth agent fixed email/profile → QA verified schema + server up.
+
 ## 7. Next Steps (when ready)
 
-1. **Restart opencode** (required once so the Supabase MCP connects).
-2. Say **"push the migrations"** → team applies `0001 → 0002 → 0003` to the live Supabase project via MCP.
-3. Create `.env.local` (URL + anon key from Supabase dashboard) — or use MCP project URL.
-4. `npm run dev` → sign up → take assessment → pick career → roadmap → rewards.
+1. **✅ DONE — Migrations pushed** to live Supabase project.
+2. **✅ DONE — `.env.local` created** with URL + anon key.
+3. **✅ DONE — Dev server running** at http://localhost:3000 (started in background).
+4. **Manual QA for the user**: login as `raghavg1024@gmail.com` → take assessment → pick career → roadmap → rewards.
 5. Optional Sprint 3: Quizzes & Projects, Opportunities, real AI (OpenAI), Rewards Shop.
 
-## 8. Safety Net
+## 8. Useful Commands (run anytime)
+
+```bash
+# Start dev server
+cd C:\Users\ragha\career-os && npm run dev
+
+# Type-check / lint / build (Definition of Done)
+npx tsc --noEmit
+npm run lint
+npm run build
+
+# See git history
+git log --oneline
+```
+
+## 9. Safety Net
 
 - Code = on disk + git commits. ✅
 - Supabase schema = files in `supabase/migrations/` (re-runnable, idempotent). ✅
@@ -99,3 +149,5 @@ Schema: 17 tables with Row-Level Security (profiles, assessments, analysis_repor
 - Cloud DB = Supabase servers. ✅
 
 **Nothing is lost by closing this window. Everything listed above already exists on your machine or in your Supabase account.**
+
+_Note: the anon key lives in `.env.local` (not pasted here) — never commit it. If `.env.local` is lost, re-run `npm run dev` after re-creating it from Supabase Dashboard → Settings → API._

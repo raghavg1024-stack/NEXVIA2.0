@@ -25,7 +25,7 @@ export function CheckInButton({
         <button
           type="submit"
           disabled={pending || checkedInToday}
-          className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-900/40 transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending
             ? "Checking in..."
@@ -39,8 +39,8 @@ export function CheckInButton({
           aria-live="polite"
           className={`mt-3 text-sm ${
             state.ok
-              ? "text-emerald-400"
-              : "text-amber-400"
+              ? "text-emerald-600"
+              : "text-amber-600"
           }`}
         >
           {state.message}
@@ -51,7 +51,7 @@ export function CheckInButton({
           {state.badges.map((badge) => (
             <span
               key={badge.key}
-              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-200"
+              className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent"
             >
               <span aria-hidden="true">{badge.icon}</span>
               New badge: {badge.name}

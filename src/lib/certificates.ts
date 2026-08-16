@@ -69,8 +69,8 @@ export async function awardCertificate(
     const certificate = {
       user_id: user.id,
       roadmap_id: roadmapId,
-      title: `Career OS Certificate — ${careerTitle}`,
-      credential_id: `COS-${Date.now()}-${randomSuffix(4)}`,
+      title: `Nexvia Certificate — ${careerTitle}`,
+      credential_id: `NX-${Date.now()}-${randomSuffix(4)}`,
       issued_at: issuedAt,
     };
 

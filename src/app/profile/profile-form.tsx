@@ -7,8 +7,8 @@ import type { Profile } from "@/lib/types";
 const initialState = { error: null as string | null };
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
-const labelClass = "block text-sm font-medium text-slate-300";
+  "mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const labelClass = "block text-sm font-medium text-slate-600";
 
 export default function ProfileEditForm({ profile }: { profile: Profile | null }) {
   const [state, formAction, pending] = useActionState(updateProfile, initialState);
@@ -16,9 +16,11 @@ export default function ProfileEditForm({ profile }: { profile: Profile | null }
   return (
     <form
       action={formAction}
-      className="rounded-2xl bg-slate-900 p-6 ring-1 ring-slate-800"
+      className="rounded-2xl bg-card p-6 ring-1 ring-line"
     >
-      <h2 className="text-lg font-semibold text-slate-50">Edit profile</h2>
+      <h2 className="font-display text-lg uppercase tracking-tight text-slate-900">
+        Edit profile
+      </h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="full_name" className={labelClass}>
@@ -106,14 +108,14 @@ export default function ProfileEditForm({ profile }: { profile: Profile | null }
         />
       </div>
       {state?.error && (
-        <div className="mt-4 rounded-lg border border-rose-800/60 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">
+        <div className="mt-4 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-600">
           {state.error}
         </div>
       )}
       <button
         type="submit"
         disabled={pending}
-        className="mt-6 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Saving..." : "Save changes"}
       </button>

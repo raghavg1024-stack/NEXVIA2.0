@@ -17,14 +17,16 @@ export default async function RecommendationsPage() {
     .filter((m): m is { rec: CareerRecommendation; career: Career } => Boolean(m.career));
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
+    <main className="min-h-screen bg-background px-6 py-12 text-slate-700">
       <div className="mx-auto max-w-5xl">
         <header>
-          <p className="text-sm font-medium uppercase tracking-widest text-indigo-400">
-            Career matches
+          <p className="font-display text-sm uppercase tracking-widest text-accent">
+            01. Career matches
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">Your top career paths</h1>
-          <p className="mt-3 text-slate-400">
+          <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-slate-900">
+            Your top career paths
+          </h1>
+          <p className="mt-3 text-slate-500">
             Based on your assessment, these careers fit your skills, interests, and goals.
           </p>
         </header>
@@ -33,31 +35,33 @@ export default async function RecommendationsPage() {
           {matches.map(({ rec, career }) => (
             <article
               key={rec.id}
-              className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900 p-6"
+              className="flex flex-col rounded-2xl border border-line bg-card p-6"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-3xl">{career.icon}</p>
-                  <h2 className="mt-2 text-xl font-semibold text-white">{career.title}</h2>
-                  <p className="text-sm text-slate-400">{career.category}</p>
+                  <h2 className="mt-2 font-display text-xl uppercase tracking-tight text-slate-900">{career.title}</h2>
+                  <p className="text-sm text-slate-500">{career.category}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-semibold text-indigo-400">{rec.match_percentage}%</p>
+                  <p className="font-display text-2xl text-accent">{rec.match_percentage}%</p>
                   <p className="text-xs text-slate-400">match</p>
                 </div>
               </div>
 
-              <p className="mt-4 text-sm text-slate-300">{career.description}</p>
+              <p className="prose prose-slate prose-sm mt-4 max-w-none text-slate-700">
+                {career.description}
+              </p>
 
               <div className="mt-5">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Why it matches
                 </h3>
-                <ul className="mt-2 space-y-1.5 text-sm text-slate-300">
+                <ul className="mt-2 space-y-1.5 text-sm text-slate-700">
                   {rec.reasons.length > 0 ? (
                     rec.reasons.map((reason) => (
                       <li key={reason} className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-indigo-500" />
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-accent" />
                         {reason}
                       </li>
                     ))
@@ -69,14 +73,14 @@ export default async function RecommendationsPage() {
 
               <div className="mt-5 grid gap-5 sm:grid-cols-2">
                 <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Skills to build
                   </h3>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {rec.required_skills.map((skill) => (
                       <span
                         key={skill}
-                        className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-300"
+                        className="rounded-full border border-line bg-slate-50 px-3 py-1 text-xs text-slate-600"
                       >
                         {skill}
                       </span>
@@ -84,7 +88,7 @@ export default async function RecommendationsPage() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                     You already bring
                   </h3>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -92,13 +96,13 @@ export default async function RecommendationsPage() {
                       rec.existing_strengths.map((skill) => (
                         <span
                           key={skill}
-                          className="rounded-full border border-indigo-500/40 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-300"
+                          className="rounded-full border border-accent/40 bg-accent-soft px-3 py-1 text-xs text-accent"
                         >
                           {skill}
                         </span>
                       ))
                     ) : (
-                      <span className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-400">
+                      <span className="rounded-full border border-line bg-slate-50 px-3 py-1 text-xs text-slate-400">
                         Fresh start — plenty to learn
                       </span>
                     )}
@@ -112,7 +116,7 @@ export default async function RecommendationsPage() {
               >
                 <button
                   type="submit"
-                  className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
+                  className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
                   Choose this career
                 </button>
