@@ -45,10 +45,7 @@ function RemoteJobCard({
 }) {
   return (
     <StaggerItem>
-      <a
-        href={job.apply_url}
-        target="_blank"
-        rel="noopener noreferrer"
+      <article
         className="group flex flex-col gap-4 rounded-2xl border border-line bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-lg hover:shadow-slate-200 sm:flex-row sm:items-start"
       >
         <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-slate-800">
@@ -85,8 +82,16 @@ function RemoteJobCard({
           <p className="prose prose-invert prose-sm mt-2 line-clamp-2 max-w-none text-slate-400">
             {job.description.replace(/\s+/g, " ").slice(0, 320)}
           </p>
+          <a
+            href={job.apply_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex w-fit rounded-lg border border-accent/40 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent hover:text-white"
+          >
+            View vacancy before applying ↗
+          </a>
         </div>
-      </a>
+      </article>
     </StaggerItem>
   );
 }
@@ -141,7 +146,7 @@ function LocalJobCard({
             </div>
             
             {job.source_name && job.application_url ? (
-              <a href={job.application_url} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400">View Official Portal</a>
+              <a href={job.application_url} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400">View official listing</a>
             ) : (
               <form action={handleApply}>
                 <button disabled={hasApplied} className="rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50">

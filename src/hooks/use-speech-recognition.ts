@@ -8,6 +8,7 @@ type SpeechRecognitionResultLike = ArrayLike<{ transcript: string }> & {
 
 type SpeechRecognitionResultEventLike = Event & {
   results: ArrayLike<SpeechRecognitionResultLike>;
+  resultIndex?: number;
 };
 
 type SpeechRecognitionErrorEventLike = Event & {
@@ -24,6 +25,7 @@ type SpeechRecognitionLike = {
   stop: () => void;
   abort: () => void;
   onresult: ((event: SpeechRecognitionResultEventLike) => void) | null;
+  onstart: (() => void) | null;
   onend: (() => void) | null;
   onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
 };
@@ -94,6 +96,8 @@ export function useSpeechRecognition({
   const [error, setError] = useState<string | null>(null);
   const [permissionState, setPermissionState] = useState<MicrophonePermission>("unknown");
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const wantsToListenRef = useRef(false);
   const valueRef = useRef(value);
   const onChangeRef = useRef(onChange);
 
@@ -104,8 +108,11 @@ export function useSpeechRecognition({
 
   useEffect(() => {
     return () => {
+      wantsToListenRef.current = false;
       recognitionRef.current?.abort();
       recognitionRef.current = null;
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     };
   }, []);
 
@@ -139,7 +146,10 @@ export function useSpeechRecognition({
   }, []);
 
   const stopListening = useCallback(() => {
+    wantsToListenRef.current = false;
     recognitionRef.current?.stop();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
     setIsListening(false);
   }, []);
 
@@ -154,20 +164,18 @@ export function useSpeechRecognition({
       return false;
     }
 
-    if (permissionState === "denied") {
-      setError(
-        "Microphone permission is still blocked. Open this site's permissions and your device privacy settings, allow Microphone, then press Use mic again.",
-      );
-      return false;
-    }
-
     setError(null);
+    wantsToListenRef.current = true;
     recognitionRef.current?.abort();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
 
     try {
       if (navigator.mediaDevices?.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((track) => track.stop());
+        // Keeping the stream alive avoids a Chrome race where recognition starts
+        // and ends before it receives audio after permission is granted.
+        streamRef.current = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        });
         setPermissionState("granted");
       }
       const recognition = new Recognition();
@@ -175,10 +183,11 @@ export function useSpeechRecognition({
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
-      recognition.lang = navigator.language || "en-US";
+      recognition.lang = navigator.language || "en-IN";
+      recognition.onstart = () => setIsListening(true);
       recognition.onresult = (event) => {
         let spokenText = "";
-        for (let index = 0; index < event.results.length; index += 1) {
+        for (let index = event.resultIndex ?? 0; index < event.results.length; index += 1) {
           spokenText += `${event.results[index][0]?.transcript ?? ""} `;
         }
         const transcript = [startingText, spokenText.trim()].filter(Boolean).join(" ");
@@ -186,20 +195,43 @@ export function useSpeechRecognition({
       };
       recognition.onerror = (event) => {
         setIsListening(false);
+        if (event.error === "no-speech") {
+          setError("I did not hear speech yet. Keep the microphone on and start your answer.");
+          return;
+        }
+        wantsToListenRef.current = false;
         recognitionRef.current = null;
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
         if (event.error !== "aborted") setError(speechErrorMessage(event.error));
       };
       recognition.onend = () => {
         setIsListening(false);
+        // Browsers can close recognition on a short pause even with continuous=true.
+        if (wantsToListenRef.current) {
+          window.setTimeout(() => {
+            if (!wantsToListenRef.current || recognitionRef.current !== recognition) return;
+            try {
+              recognition.start();
+            } catch {
+              // A pending restart is harmless; the learner can always retry.
+            }
+          }, 200);
+          return;
+        }
         recognitionRef.current = null;
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       };
       recognitionRef.current = recognition;
       recognition.start();
-      setIsListening(true);
       return true;
     } catch (caught) {
+      wantsToListenRef.current = false;
       setIsListening(false);
       recognitionRef.current = null;
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
       setError(
         caught instanceof DOMException && caught.name === "InvalidStateError"
           ? "The microphone is already starting. Wait a moment and try again."
@@ -207,7 +239,7 @@ export function useSpeechRecognition({
       );
       return false;
     }
-  }, [permissionState]);
+  }, []);
 
   return {
     isSupported,

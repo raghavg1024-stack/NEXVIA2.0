@@ -105,7 +105,7 @@ export default async function ScholarshipsPage() {
                         </span>
                       </div>
                       {job.application_url ? <a href={job.application_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400">
-                        Apply Now <ExternalLink className="h-3.5 w-3.5" />
+                        View official listing <ExternalLink className="h-3.5 w-3.5" />
                       </a> : <span className="rounded-lg border border-line px-4 py-1.5 text-sm text-slate-500">Application link coming soon</span>}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-400">
@@ -207,7 +207,7 @@ export default async function ScholarshipsPage() {
                     <div className="flex flex-wrap justify-end gap-2">
                       {item.source_url ? <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-slate-300 hover:border-accent/40 hover:text-white">Official Rules <ExternalLink className="h-3.5 w-3.5" /></a> : null}
                       {item.application_url ? <a href={item.application_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90">
-                        Check & Apply <ExternalLink className="h-3.5 w-3.5" />
+                        View scheme on NSP <ExternalLink className="h-3.5 w-3.5" />
                       </a> : <span className="rounded-lg border border-line px-3 py-2 text-xs text-slate-500">Application link coming soon</span>}
                     </div>
                   </div>
