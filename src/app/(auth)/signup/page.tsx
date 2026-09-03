@@ -8,7 +8,7 @@ import { signup, type AuthState } from "../actions";
 const initialState: AuthState = { error: null, success: null };
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-foreground placeholder-slate-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signup, initialState);
@@ -30,13 +30,13 @@ export default function SignupPage() {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="relative w-full max-w-md rounded-2xl bg-card p-8 text-center ring-1 ring-line"
         >
-          <h1 className="font-display text-xl uppercase tracking-tight text-slate-900">
+          <h1 className="font-display text-xl uppercase tracking-tight text-foreground">
             Check your email
           </h1>
-          <p className="mt-2 text-sm text-slate-500">{state.success}</p>
+          <p className="mt-2 text-sm text-slate-400">{state.success}</p>
           <Link
             href="/login"
-            className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800"
+            className="mt-6 inline-block rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110"
           >
             Go to login
           </Link>
@@ -48,13 +48,13 @@ export default function SignupPage() {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="relative w-full max-w-md rounded-2xl bg-card p-8 shadow-xl ring-1 ring-line"
         >
-          <h1 className="font-display text-2xl uppercase tracking-tight text-slate-900">
+          <h1 className="font-display text-2xl uppercase tracking-tight text-foreground">
             Create your account
           </h1>
-          <p className="mt-1 text-sm text-slate-500">Start your Nexvia journey.</p>
+          <p className="mt-1 text-sm text-slate-400">Start your Nexvia journey.</p>
           <form action={formAction} className="mt-8 space-y-4">
             <div>
-              <label htmlFor="full_name" className="block text-sm font-medium text-slate-600">
+              <label htmlFor="full_name" className="block text-sm font-medium text-slate-400">
                 Full name
               </label>
               <input
@@ -68,7 +68,7 @@ export default function SignupPage() {
               />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-600">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-400">
                 Email
               </label>
               <input
@@ -82,7 +82,7 @@ export default function SignupPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-600">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-400">
                 Password
               </label>
               <input
@@ -104,14 +104,14 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={pending}
-              className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pending ? "Creating account..." : "Sign up"}
             </button>
           </form>
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className="mt-6 text-center text-sm text-slate-400">
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-accent hover:text-slate-900">
+            <Link href="/login" className="font-medium text-accent hover:text-foreground">
               Log in
             </Link>
           </p>

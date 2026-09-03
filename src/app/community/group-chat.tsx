@@ -26,12 +26,12 @@ export function GroupChat({ groupId }: { groupId: string }) {
         required
         maxLength={1000}
         placeholder="Write a message..."
-        className="flex-1 rounded-xl border border-line bg-card px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
+        className="flex-1 rounded-xl border border-line bg-card px-4 py-2 text-sm text-foreground placeholder:text-slate-400 focus:border-accent focus:outline-none"
       />
       <button
         type="submit"
         disabled={pending}
-        className="shrink-0 rounded-xl bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+        className="shrink-0 rounded-xl bg-accent px-6 py-2 text-sm font-semibold text-white shadow-lg transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Sending..." : "Send"}
       </button>

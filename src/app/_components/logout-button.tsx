@@ -9,7 +9,7 @@ function LogoutSubmit() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-60"
+      className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:brightness-110 disabled:opacity-60"
     >
       {pending ? "Logging out..." : "Logout"}
     </button>

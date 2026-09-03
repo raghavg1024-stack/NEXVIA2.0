@@ -44,7 +44,7 @@ export function NexviaLogoMark({
         <NexviaLogo className="h-8 w-8" />
         <span className="pointer-events-none absolute inset-0 rounded-[11px] shadow-[0_0_18px_rgba(129,140,248,0.55)]" />
       </span>
-      <span className="text-lg font-bold tracking-tight text-slate-900">
+      <span className="text-lg font-bold tracking-tight text-foreground">
         Nexvia
       </span>
     </Link>

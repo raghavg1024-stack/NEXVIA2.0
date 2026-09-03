@@ -1,7 +1,6 @@
 export type UUID = string;
 
 export type EducationLevel =
-  | "high_school"
   | "undergraduate"
   | "graduate"
   | "self_taught";
@@ -17,6 +16,20 @@ export interface Profile {
   full_name: string | null;
   email: string | null;
   avatar_url: string | null;
+  user_type: "student" | "recruiter";
+  cgpa: number | null;
+  current_percentage: number | null;
+  tenth_percentage: number | null;
+  twelfth_percentage: number | null;
+  skill_tags: string[];
+  open_to_recruiters: boolean;
+  gender: string | null;
+  social_category: string | null;
+  disability_percentage: number | null;
+  annual_family_income: number | null;
+  domicile_state: string | null;
+  major: string | null;
+  graduation_year: number | null;
   education_level: EducationLevel | null;
   study_hours_per_week: number | null;
   goals: string | null;
@@ -131,6 +144,7 @@ export interface Roadmap {
   status: RoadmapStatus;
   milestones: Milestone[];
   created_at: string;
+  last_activity_at: string | null;
 }
 
 export interface Badge {
@@ -227,4 +241,78 @@ export interface CareerReadinessScore {
   overall: number;
   suggestions: string[];
   updated_at: string;
+}
+
+export interface Company {
+  id: UUID;
+  name: string;
+  description: string | null;
+  website: string | null;
+  logo_url: string | null;
+  created_at: string;
+}
+
+export interface CandidateProfile {
+  user_id: UUID;
+  display_name: string;
+  cgpa: number | null;
+  current_percentage: number | null;
+  major: string | null;
+  skill_tags: string[];
+  open_to_recruiters: boolean;
+  updated_at: string;
+}
+
+export interface Job {
+  id: UUID;
+  company_id: UUID;
+  title: string;
+  role_type: "internship" | "full_time" | "part_time";
+  description: string;
+  required_skills: string[];
+  min_cgpa: number | null;
+  min_percentage: number | null;
+  eligible_majors: string[];
+  application_url: string | null;
+  location: string | null;
+  source_name: string | null;
+  source_url: string | null;
+  verified_at: string | null;
+  status: "open" | "closed";
+  created_at: string;
+}
+
+export interface Scholarship {
+  id: UUID;
+  provider_name: string;
+  title: string;
+  description: string;
+  min_cgpa: number | null;
+  min_percentage: number | null;
+  amount: string;
+  deadline: string | null;
+  eligible_education_levels: string[];
+  required_skills: string[];
+  application_url: string | null;
+  eligible_majors: string[];
+  eligible_genders: string[];
+  eligible_categories: string[];
+  min_disability_percentage: number | null;
+  max_family_income: number | null;
+  eligible_states: string[];
+  eligibility_notes: string | null;
+  source_name: string | null;
+  source_url: string | null;
+  verified_at: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface JobApplication {
+  id: UUID;
+  job_id: UUID;
+  user_id: UUID;
+  match_score: number | null;
+  status: "pending" | "reviewed" | "accepted" | "rejected";
+  applied_at: string;
 }

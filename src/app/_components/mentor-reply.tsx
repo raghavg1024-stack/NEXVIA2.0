@@ -4,7 +4,7 @@ export function MentorReply({ content }: { content: string }) {
   const blocks = content.split(/\n{2,}/);
 
   return (
-    <div className="prose prose-slate prose-sm max-w-none leading-relaxed">
+    <div className="prose prose-invert prose-sm max-w-none leading-relaxed">
       {blocks.map((block, i) => {
         const lines = block.split("\n");
         const bullets = lines.filter((line) => line.startsWith(BULLET));

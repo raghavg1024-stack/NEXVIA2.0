@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ASSESSMENT_QUESTIONS, CAREERS, XP_RULES, matchCareers } from "@/lib/data";
+import {
+  ASSESSMENT_QUESTIONS,
+  CAREERS,
+  XP_RULES,
+  matchCareers,
+  skillsAreRelated,
+} from "@/lib/data";
 import { grantReward } from "@/lib/rewards";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -260,10 +266,30 @@ export async function completeAssessment(
     match_percentage: m.match,
     reasons: m.reasons,
     required_skills: m.career.required_skills,
-    existing_strengths: m.career.required_skills.filter((s) => selectedSkills.includes(s)),
-    growth_opportunities: m.career.required_skills.filter((s) => !selectedSkills.includes(s)),
+    existing_strengths: m.career.required_skills.filter((required) =>
+      selectedSkills.some((selected) => skillsAreRelated(selected, required))
+    ),
+    growth_opportunities: m.career.required_skills.filter(
+      (required) => !selectedSkills.some((selected) => skillsAreRelated(selected, required))
+    ),
     is_selected: false,
   }));
+
+  // Keep assessment completion resilient if a future catalog entry is added to
+  // the app before its database seed reaches production.
+  const candidateCareerIds = [...new Set(recRows.map((row) => row.career_id))];
+  const { data: availableCareers, error: careerLookupError } = await supabase
+    .from("careers")
+    .select("id")
+    .in("id", candidateCareerIds);
+  if (careerLookupError) {
+    throw new Error(careerLookupError.message);
+  }
+  const availableCareerIds = new Set((availableCareers ?? []).map((career) => career.id));
+  const safeRecRows = recRows.filter((row) => availableCareerIds.has(row.career_id));
+  if (safeRecRows.length === 0) {
+    throw new Error("No matching career records are available. Please try the assessment again.");
+  }
 
   const { error: recDeleteError } = await supabase
     .from("career_recommendations")
@@ -274,7 +300,7 @@ export async function completeAssessment(
   }
   const { data: recInserted, error: recError } = await supabase
     .from("career_recommendations")
-    .insert(recRows)
+    .insert(safeRecRows)
     .select();
   if (recError) {
     throw new Error(recError.message);
@@ -332,7 +358,12 @@ export async function selectCareer(careerId: string, recommendationId: string) {
   if (roadmap) {
     const { error } = await supabase
       .from("roadmaps")
-      .update({ career_id: careerId, career_title: careerTitle, status: "draft" })
+      .update({
+        career_id: careerId,
+        career_title: careerTitle,
+        status: "draft",
+        last_activity_at: new Date().toISOString(),
+      })
       .eq("user_id", user!.id);
     if (error) {
       throw new Error(error.message);
@@ -340,7 +371,13 @@ export async function selectCareer(careerId: string, recommendationId: string) {
   } else {
     const { error } = await supabase
       .from("roadmaps")
-      .insert({ user_id: user!.id, career_id: careerId, career_title: careerTitle, status: "draft" });
+      .insert({
+        user_id: user!.id,
+        career_id: careerId,
+        career_title: careerTitle,
+        status: "draft",
+        last_activity_at: new Date().toISOString(),
+      });
     if (error) {
       throw new Error(error.message);
     }

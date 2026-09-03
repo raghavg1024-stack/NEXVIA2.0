@@ -34,7 +34,7 @@ export function CourseToggle({ course }: { course: Course }) {
         disabled={pending}
         className={
           next === "in_progress"
-            ? "rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+            ? "rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:opacity-50"
             : "rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
         }
       >
@@ -71,7 +71,7 @@ export function MilestoneAction({
 
   if (!next) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-slate-400">
         {status === "locked"
           ? "Complete the previous milestone to unlock this one."
           : "Complete all courses to finish this milestone."}

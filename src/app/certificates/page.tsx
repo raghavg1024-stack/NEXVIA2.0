@@ -2,9 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCertificates } from "@/lib/certificates";
 import { createClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
 import { Reveal, Stagger, StaggerItem } from "../_components/motion";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Certificates",
+};
 
 export default async function CertificatesPage() {
   let authed = false;
@@ -23,9 +28,8 @@ export default async function CertificatesPage() {
     <main className="relative mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
       <header>
         <Reveal>
-          <span className="font-display text-sm text-accent">01.</span>
-          <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-slate-900">Certificates</h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-foreground">Certificates</h1>
+          <p className="mt-2 text-sm text-slate-400">
             Credentials you earn by completing your learning roadmap.
           </p>
         </Reveal>
@@ -42,16 +46,16 @@ export default async function CertificatesPage() {
                 NX
               </span>
             </div>
-            <h2 className="mt-6 font-display text-lg uppercase tracking-tight text-slate-900">
+            <h2 className="mt-6 font-display text-lg uppercase tracking-tight text-foreground">
               No certificates yet
             </h2>
-            <p className="mt-2 max-w-md text-sm text-slate-500">
+            <p className="mt-2 max-w-md text-sm text-slate-400">
               Complete your roadmap and you will earn a Nexvia certificate with
               a verifiable credential ID you can show off.
             </p>
             <Link
               href="/roadmap"
-              className="mt-6 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-slate-800"
+              className="mt-6 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110"
             >
               Go to my roadmap
             </Link>
@@ -77,12 +81,12 @@ export default async function CertificatesPage() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-accent">
                   Certificate of Completion
                 </p>
-                <h2 className="mt-3 pr-16 font-display text-xl uppercase tracking-tight text-slate-900">
+                <h2 className="mt-3 pr-16 font-display text-xl uppercase tracking-tight text-foreground">
                   {certificate.title}
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-400">
                   Credential ID:{" "}
-                  <span className="font-mono text-slate-700">
+                  <span className="font-mono text-slate-300">
                     {certificate.credential_id}
                   </span>
                 </p>

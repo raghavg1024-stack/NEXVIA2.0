@@ -19,13 +19,13 @@ const SUGGESTION_TEMPLATES: Record<
   technical_skills: (score) =>
     `Complete more courses in your roadmap to build technical skills (currently ${score}/100).`,
   communication: (score) =>
-    `Earn more badges and share your learning to sharpen communication (currently ${score}/100).`,
+    `Practice explaining your projects aloud and use mock-interview feedback to sharpen communication (currently ${score}/100).`,
   projects: (score) =>
     `Finish more milestones to build portfolio-worthy projects (currently ${score}/100).`,
   resume_quality: (score) =>
-    `Fill out the rest of your profile to strengthen your resume (currently ${score}/100).`,
+    `Complete your profile and add finished milestone evidence before tailoring your resume (currently ${score}/100).`,
   interview_readiness: (score) =>
-    `Keep your daily streak and level up to boost interview readiness (currently ${score}/100).`,
+    `Complete more mock interviews and improve your answer scores (currently ${score}/100).`,
 };
 
 function buildSuggestions(score: RawScore): string[] {
@@ -99,7 +99,9 @@ export async function getReadiness(): Promise<CareerReadinessScore | null> {
     const roadmapIds = (roadmapRows ?? []).map((row) => row.id);
 
     let completedCourses = 0;
+    let totalCourses = 0;
     let completedMilestones = 0;
+    let totalMilestones = 0;
 
     if (roadmapIds.length > 0) {
       const { data: milestoneRows } = await supabase
@@ -107,6 +109,7 @@ export async function getReadiness(): Promise<CareerReadinessScore | null> {
         .select("id, status")
         .in("roadmap_id", roadmapIds);
       const milestones = milestoneRows ?? [];
+      totalMilestones = milestones.length;
       completedMilestones = milestones.filter(
         (m) => m.status === "completed"
       ).length;
@@ -118,6 +121,7 @@ export async function getReadiness(): Promise<CareerReadinessScore | null> {
           .select("status")
           .in("milestone_id", milestoneIds);
         const courses = courseRows ?? [];
+        totalCourses = courses.length;
         completedCourses = courses.filter(
           (c) => c.status === "completed"
         ).length;
@@ -136,15 +140,36 @@ export async function getReadiness(): Promise<CareerReadinessScore | null> {
     ).length;
     const completeness = Math.round((filled / profileFields.length) * 100);
 
-    let technical = clamp(completedCourses * 15 + (profile?.xp ?? 0) / 50);
-    let communication = clamp(40 + badgesEarned * 5);
-    let projects = clamp(completedMilestones * 25);
-    let resumeQuality = clamp(30 + completeness);
-    let interview = clamp(
-      20 +
-        (profile?.level ?? 1) * 5 +
-        Math.min(20, (profile?.current_streak_days ?? 0) * 2)
+    const { data: interviewRows } = await supabase
+      .from("mock_interviews")
+      .select("overall_score")
+      .eq("user_id", user.id)
+      .eq("is_complete", true)
+      .order("completed_at", { ascending: false })
+      .limit(5);
+    const completedInterviewScores = (interviewRows ?? [])
+      .map((row) => Number(row.overall_score))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    const interviewAverage = completedInterviewScores.length
+      ? completedInterviewScores.reduce((sum, value) => sum + value, 0) /
+        completedInterviewScores.length
+      : null;
+
+    let technical = clamp(
+      15 +
+        (totalCourses > 0 ? (completedCourses / totalCourses) * 70 : 0) +
+        Math.min(15, (profile?.xp ?? 0) / 100)
     );
+    let communication = clamp(
+      25 + badgesEarned * 4 + (interviewAverage === null ? 0 : interviewAverage * 0.35)
+    );
+    let projects = clamp(
+      10 + (totalMilestones > 0 ? (completedMilestones / totalMilestones) * 80 : 0)
+    );
+    let resumeQuality = clamp(
+      20 + completeness * 0.65 + Math.min(15, completedMilestones * 3)
+    );
+    let interview = clamp(interviewAverage ?? 20);
 
     if (!profile && previous) {
       technical = previous.technical_skills;

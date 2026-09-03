@@ -55,17 +55,17 @@ export default async function GroupPage({
     <div className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
       <Link
         href="/community"
-        className="text-sm font-medium text-accent transition-colors hover:text-slate-900"
+        className="text-sm font-medium text-accent transition-colors hover:text-foreground"
       >
         Back to community
       </Link>
 
       <div className="mt-4 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl uppercase tracking-tight text-slate-900">
+          <h1 className="font-display text-3xl uppercase tracking-tight text-foreground">
             {group.name}
           </h1>
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-slate-400">
             {group.description || "No description yet."}
           </p>
         </div>
@@ -77,7 +77,7 @@ export default async function GroupPage({
       </div>
 
       <div className="mt-6 rounded-xl border border-line bg-card p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
           Members ({members.length})
         </h2>
         {members.length === 0 ? (
@@ -87,7 +87,7 @@ export default async function GroupPage({
             {members.map((m) => (
               <li
                 key={m.user_id}
-                className="rounded-full border border-line px-3 py-1 text-sm text-slate-600"
+                className="rounded-full border border-line px-3 py-1 text-sm text-slate-400"
               >
                 {m.full_name?.trim() || "Group member"}
               </li>
@@ -116,14 +116,14 @@ export default async function GroupPage({
                     <div
                       className={`max-w-[75%] rounded-2xl px-4 py-3 ${
                         own
-                          ? "rounded-br-sm bg-slate-900"
-                          : "rounded-bl-sm bg-slate-100"
+                          ? "rounded-br-sm bg-accent"
+                          : "rounded-bl-sm bg-slate-800"
                       }`}
                     >
                       <p className="text-xs font-medium text-accent">
                         {message.user_name || "Group member"}
                       </p>
-                      <p className={`mt-0.5 text-sm ${own ? "text-white" : "text-slate-700"}`}>
+                      <p className={`mt-0.5 text-sm ${own ? "text-white" : "text-slate-300"}`}>
                         {message.content}
                       </p>
                       <p className={`mt-1 text-xs ${own ? "text-slate-400" : "text-slate-400"}`}>
@@ -142,17 +142,17 @@ export default async function GroupPage({
       ) : (
         <div className="mt-6 flex flex-col items-start justify-between gap-4 rounded-xl border border-line bg-card p-6 sm:flex-row sm:items-center">
           <div>
-            <h2 className="font-display text-lg uppercase tracking-tight text-slate-900">
+            <h2 className="font-display text-lg uppercase tracking-tight text-foreground">
               You are not a member of this group
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-400">
               Join to see the conversation and send messages.
             </p>
           </div>
           <form action={joinGroup.bind(null, group.id)}>
             <button
               type="submit"
-              className="shrink-0 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-slate-800"
+              className="shrink-0 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:brightness-110"
             >
               Join group
             </button>

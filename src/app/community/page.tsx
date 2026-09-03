@@ -3,9 +3,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getGroups, joinGroup, leaveGroup } from "@/lib/community";
 import { CreateGroupForm } from "./create-group-form";
+import type { Metadata } from "next";
 import { Reveal, Stagger, StaggerItem } from "../_components/motion";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Community",
+};
 
 export default async function CommunityPage() {
   const supabase = await createClient();
@@ -21,9 +26,8 @@ export default async function CommunityPage() {
   return (
     <div className="relative mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">
       <Reveal>
-        <span className="font-display text-sm text-accent">01.</span>
-        <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-slate-900">Community</h1>
-        <p className="mt-2 text-slate-500">
+        <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-foreground">Community</h1>
+        <p className="mt-2 text-slate-400">
           Join study groups, meet peers, and learn together.
         </p>
       </Reveal>
@@ -33,11 +37,10 @@ export default async function CommunityPage() {
       </Reveal>
 
       <Reveal className="mt-12 flex items-baseline gap-4">
-        <span className="font-display text-sm text-accent">02.</span>
-        <h2 className="font-display text-2xl uppercase tracking-tight text-slate-900">Study groups</h2>
+        <h2 className="font-display text-2xl uppercase tracking-tight text-foreground">Study groups</h2>
       </Reveal>
       {groups.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-line bg-card p-6 text-slate-500">
+        <p className="mt-4 rounded-2xl border border-line bg-card p-6 text-slate-400">
           No study groups yet. Create the first one to get started.
         </p>
       ) : (
@@ -48,7 +51,7 @@ export default async function CommunityPage() {
                 <div className="flex items-start justify-between gap-3">
                   <Link
                     href={`/community/${group.id}`}
-                    className="font-display text-lg uppercase tracking-tight text-slate-900 transition-colors hover:text-accent"
+                    className="font-display text-lg uppercase tracking-tight text-foreground transition-colors hover:text-accent"
                   >
                     {group.name}
                   </Link>
@@ -58,7 +61,7 @@ export default async function CommunityPage() {
                     </span>
                   )}
                 </div>
-                <p className="mt-2 flex-1 text-sm text-slate-500">
+                <p className="mt-2 flex-1 text-sm text-slate-400">
                   {group.description || "No description yet."}
                 </p>
                 <p className="mt-3 text-xs text-slate-400">
@@ -69,7 +72,7 @@ export default async function CommunityPage() {
                     <form action={leaveGroup.bind(null, group.id)}>
                       <button
                         type="submit"
-                        className="w-full rounded-xl border border-line px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
+                        className="w-full rounded-xl border border-line px-4 py-2 text-sm font-semibold text-slate-400 transition-colors hover:border-slate-600 hover:text-foreground"
                       >
                         Leave
                       </button>
@@ -78,7 +81,7 @@ export default async function CommunityPage() {
                     <form action={joinGroup.bind(null, group.id)}>
                       <button
                         type="submit"
-                        className="w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:bg-slate-800"
+                        className="w-full rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110"
                       >
                         Join
                       </button>

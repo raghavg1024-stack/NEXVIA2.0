@@ -25,7 +25,7 @@ export function CheckInButton({
         <button
           type="submit"
           disabled={pending || checkedInToday}
-          className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending
             ? "Checking in..."

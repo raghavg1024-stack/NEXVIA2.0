@@ -44,7 +44,7 @@ export async function signup(
 
   if (error) return { error: error.message };
 
-  if (data.user) {
+  if (data.session && data.user) {
     const { error: upsertError } = await supabase
       .from("profiles")
       .upsert({ id: data.user.id, full_name: fullName, email }, { onConflict: "id" });

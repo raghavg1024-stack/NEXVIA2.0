@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { generateText, type ModelMessage } from "ai";
 import { CAREERS } from "@/lib/data";
 import type { Career, MentorMessage } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
@@ -16,6 +17,7 @@ export interface MentorContext {
 export interface MentorSendState {
   ok: boolean;
   error?: string;
+  responseMode?: "ai" | "guided";
   userMessage?: MentorMessage;
   assistantMessage?: MentorMessage;
 }
@@ -88,7 +90,25 @@ export async function sendMessage(
     }
 
     const context = await loadContext(user.id);
-    const reply = generateMentorReply(content, context);
+    const { data: recentRows } = await supabase
+      .from("mentor_messages")
+      .select("role, content")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(8);
+    const history = (recentRows ?? [])
+      .reverse()
+      .filter((message) => message.role === "user" || message.role === "assistant")
+      .map((message) => ({
+        role: message.role as "user" | "assistant",
+        content: message.content,
+      }));
+    const reply = await generateAccurateMentorReply(
+      content,
+      context,
+      history,
+      user.id
+    );
 
     const { data: userMessage } = await supabase
       .from("mentor_messages")
@@ -101,7 +121,7 @@ export async function sendMessage(
 
     const { data: assistantMessage } = await supabase
       .from("mentor_messages")
-      .insert({ user_id: user.id, role: "assistant", content: reply })
+      .insert({ user_id: user.id, role: "assistant", content: reply.text })
       .select("id, user_id, role, content, created_at")
       .single();
     if (!assistantMessage) {
@@ -111,6 +131,7 @@ export async function sendMessage(
     revalidatePath("/mentor");
     return {
       ok: true,
+      responseMode: reply.mode,
       userMessage: userMessage as MentorMessage,
       assistantMessage: assistantMessage as MentorMessage,
     };
@@ -265,6 +286,51 @@ const PROJECT_KEYWORDS = [
   "make something",
   "build an app",
   "sample project",
+];
+
+const JOB_SEARCH_KEYWORDS = [
+  "job search",
+  "find a job",
+  "get a job",
+  "apply for",
+  "job application",
+  "linkedin",
+  "networking",
+  "referral",
+  "salary",
+  "job offer",
+];
+
+const SKILL_KEYWORDS = [
+  "skills needed",
+  "required skills",
+  "skill gap",
+  "improve my skills",
+  "which skill",
+  "what skill",
+  "technical skills",
+  "soft skills",
+];
+
+const TIME_KEYWORDS = [
+  "time management",
+  "manage my time",
+  "daily routine",
+  "weekly routine",
+  "study schedule",
+  "balance college",
+  "balance work",
+];
+
+const EDUCATION_KEYWORDS = [
+  "college",
+  "university",
+  "degree",
+  "certification",
+  "higher studies",
+  "masters",
+  "master's",
+  "mba",
 ];
 
 const NEXT_STEP_KEYWORDS = [
@@ -487,6 +553,74 @@ function projectReply(context: MentorContext): string {
   return joinLines(lines);
 }
 
+function jobSearchReply(q: string, context: MentorContext): string {
+  const career = context.career?.title ?? "your target role";
+  if (q.includes("salary")) {
+    return joinLines([
+      `Salary for ${career} depends on location, experience, company, and the exact responsibilities, so I should not invent one number.`,
+      "• Compare several current listings for the same role and location.",
+      "• Separate base pay from bonuses, benefits, equity, and learning opportunity.",
+      "• Use your projects and demonstrated skills to justify the stronger end of a range.",
+      "Next step: collect five comparable listings and write down the range they actually show.",
+    ]);
+  }
+  return joinLines([
+    `For a ${career} job search, focus on proof of ability and targeted applications rather than sending the same profile everywhere.`,
+    "• Pick roles where you match most core requirements, even if you do not match every optional one.",
+    "• Tailor your resume headline, skills, and strongest project to each role.",
+    "• Ask classmates, alumni, mentors, and relevant communities for specific advice or referrals.",
+    "• Track applications, follow-ups, interviews, and what each rejection teaches you.",
+    "Next step: choose one suitable opening and tailor your resume for it today.",
+  ]);
+}
+
+function skillsReply(context: MentorContext): string {
+  if (context.career) {
+    return joinLines([
+      `For your ${context.career.title} path, prioritize one foundational skill, one job-specific skill, and one communication skill at a time.`,
+      "• Compare your current abilities with the requirements in several real role descriptions.",
+      "• Learn the highest-frequency missing skill, then prove it through a small project.",
+      "• Practice explaining what you built, the decisions you made, and the result.",
+      progressNote(context),
+      "Next step: open three relevant job descriptions and write down the skill that appears most often.",
+    ]);
+  }
+  return joinLines([
+    "The right skills depend on the role you want, so choose the direction before collecting random certificates.",
+    "• Complete the career assessment and shortlist two roles.",
+    "• Compare their common requirements.",
+    "• Learn one shared foundational skill and apply it in a small project.",
+    "Next step: pick the two careers you are most curious about and compare their required skills.",
+  ]);
+}
+
+function timeReply(context: MentorContext): string {
+  const weekly = context.studyHours && context.studyHours > 0
+    ? `You have about ${context.studyHours} study hours each week.`
+    : "Start with a schedule you can repeat even during a busy week.";
+  return joinLines([
+    weekly,
+    "• Reserve three to five focused sessions instead of relying on one long session.",
+    "• Give each session one visible outcome, such as finishing a lesson or improving one project feature.",
+    "• Keep one buffer session for missed work and review progress every weekend.",
+    "• Reduce the plan when life gets busy; do not abandon it completely.",
+    "Next step: place your next three focused sessions on your calendar now.",
+  ]);
+}
+
+function educationReply(q: string, context: MentorContext): string {
+  const goal = context.career?.title ?? "your target career";
+  const asksCertification = q.includes("certification");
+  return joinLines([
+    `${asksCertification ? "A certification" : "A degree or further study"} is useful for ${goal} when it is required by employers, builds a genuine skill gap, or provides access to projects and networks you cannot get more efficiently elsewhere.`,
+    "• Check actual role requirements before paying for a program.",
+    "• Compare curriculum, practical work, alumni outcomes, time, and total cost.",
+    "• Prefer programs that produce demonstrable work rather than only a credential.",
+    "• Avoid enrolling only because you feel uncertain about your next step.",
+    "Next step: compare one program with a lower-cost project-based learning route against the same career goal.",
+  ]);
+}
+
 function nextStepReply(context: MentorContext): string {
   const lines: string[] = [`Let's make your next step concrete, ${greet(context)}.`];
   if (context.career) {
@@ -539,21 +673,104 @@ function extractConcept(q: string): string {
   return "";
 }
 
+const CONCEPT_GUIDES: Array<{
+  terms: string[];
+  definition: string;
+  example: string;
+  next: string;
+}> = [
+  {
+    terms: ["artificial intelligence", "ai"],
+    definition: "Artificial intelligence is the broad field of building computer systems that perform tasks associated with human intelligence, such as understanding language, recognizing patterns, planning, or making predictions.",
+    example: "A support tool that classifies a customer's question and suggests a relevant answer is an AI system.",
+    next: "Start with Python, basic statistics, and one small classification project.",
+  },
+  {
+    terms: ["machine learning", "ml"],
+    definition: "Machine learning is a part of AI where a model learns patterns from examples instead of being given a fixed rule for every case.",
+    example: "A spam filter learns from messages labeled spam or not spam, then predicts the label of a new message.",
+    next: "Learn training data, features, labels, validation, and overfitting, then build a small classifier.",
+  },
+  {
+    terms: ["data science"],
+    definition: "Data science combines statistics, programming, and domain knowledge to answer questions and build predictive or decision-support systems from data.",
+    example: "A data scientist might study customer behavior, test which factors predict churn, and validate a model before it is used.",
+    next: "Begin with spreadsheets or SQL, descriptive statistics, and a clearly explained analysis project.",
+  },
+  {
+    terms: ["data analysis", "data analytics"],
+    definition: "Data analysis is the process of cleaning, exploring, and interpreting data to answer a specific question and support a decision.",
+    example: "Comparing monthly sales by product and region to explain why revenue changed is data analysis.",
+    next: "Practice with spreadsheets and SQL, then present one finding with a chart and a clear recommendation.",
+  },
+  {
+    terms: ["algorithm"],
+    definition: "An algorithm is a finite sequence of steps for solving a problem; a data structure is the way information is organized so those steps can use it efficiently.",
+    example: "Binary search is an algorithm, while a sorted array is a data structure it can search efficiently.",
+    next: "Implement a search or sorting algorithm and compare its behavior on small and large inputs.",
+  },
+  {
+    terms: ["cloud computing", "cloud"],
+    definition: "Cloud computing provides servers, storage, databases, and other computing resources over a network so teams can use and scale them without owning all the hardware.",
+    example: "A web app can run on managed cloud servers and store uploads in object storage, increasing capacity as traffic grows.",
+    next: "Deploy one small app and learn identity, networking, monitoring, cost, and security basics.",
+  },
+  {
+    terms: ["cybersecurity", "cyber security"],
+    definition: "Cybersecurity is the practice of protecting systems, networks, applications, and data from unauthorized access, disruption, or damage.",
+    example: "Requiring strong authentication, fixing vulnerable software, monitoring alerts, and testing recovery all reduce security risk.",
+    next: "Learn networking, operating-system basics, access control, and defensive labs in a legal practice environment.",
+  },
+  {
+    terms: ["ux", "user experience", "ui design", "user interface"],
+    definition: "UX focuses on how well a product solves a user's problem across the whole experience; UI focuses on the visual and interactive interface through which the user completes tasks.",
+    example: "Researching why checkout is confusing is UX work; redesigning its layout, controls, and visual states is UI work.",
+    next: "Choose one everyday flow, interview a few users, sketch alternatives, and test a simple prototype.",
+  },
+  {
+    terms: ["product management", "product manager"],
+    definition: "Product management decides which user and business problems a team should solve, why they matter, and how success will be measured while coordinating delivery with design and engineering.",
+    example: "A product manager may validate a customer problem, prioritize a smaller first release, and track whether it improves activation.",
+    next: "Write a one-page product brief with the user, problem, evidence, scope, trade-offs, and success metric.",
+  },
+  {
+    terms: ["digital marketing"],
+    definition: "Digital marketing uses channels such as search, social media, content, email, and paid advertising to attract, convert, and retain an audience.",
+    example: "A marketer can publish a landing page, run a small campaign, and compare conversion rates by message and audience.",
+    next: "Pick one audience and goal, create a measurable campaign, then review reach, conversion, cost, and learning.",
+  },
+];
+
+function conceptGuide(q: string) {
+  return CONCEPT_GUIDES.find((guide) =>
+    guide.terms.some((term) => new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(q))
+  );
+}
+
 function explainReply(q: string, context: MentorContext): string {
   const concept = extractConcept(q);
+  const guide = conceptGuide(q);
+  if (guide) {
+    return joinLines([
+      guide.definition,
+      `Example: ${guide.example}`,
+      context.career
+        ? `For your ${context.career.title} path, focus on where this concept appears in real work rather than memorizing the definition.`
+        : "Connect the idea to a small real-world task so you can see how it works.",
+      `Next step: ${guide.next}`,
+    ]);
+  }
   const lines: string[] = [];
   if (concept) {
     lines.push(
-      `Great question, ${greet(context)}. "${concept}" is a building block in this field, and the fastest way to understand it is to see it in action.`
+      `I want to answer "${concept}" accurately, ${greet(context)}, but I need the field or context you mean because the term can have different meanings.`
     );
   } else {
     lines.push(
-      `Great question, ${greet(context)}. The fastest way to understand any concept is to see it in action.`
+      `I want to answer accurately, ${greet(context)}. Tell me the exact concept and the field or course where you saw it.`
     );
   }
-  lines.push("• Read a beginner-friendly explanation, then rephrase it in your own words.");
-  lines.push("• Try it in a small hands-on example or exercise the same day.");
-  lines.push("• Teach it to a friend or write a short note to lock it in.");
+  lines.push("Once you give me that context, I can explain it in plain language, show an example, and connect it to your career path.");
   if (context.career && concept) {
     lines.push(`Look for how "${concept}" shows up in the ${context.career.title} track — that connection makes it stick.`);
   }
@@ -572,17 +789,63 @@ function greetingReply(context: MentorContext): string {
   return joinLines(lines);
 }
 
-function defaultReply(context: MentorContext): string {
-  const lines = [
-    `I am here to help you plan your next move, ${greet(context)}.`,
-    "• Ask about a career, resume, interview, project, scholarship, or internship.",
-    "• Tell me a skill you want to learn and I will point you to a starting point.",
-    "• Say \"what should I do next?\" and I will map out your next action.",
-    progressNote(context),
-    levelNote(context),
-    "Every mentor chat is a chance to get one step closer. What is on your mind?",
-  ];
-  return joinLines(lines);
+function defaultReply(question: string, context: MentorContext): string {
+  const topic = question.trim().replace(/\s+/g, " ").replace(/[?!.]+$/, "").slice(0, 120);
+  return joinLines([
+    `You asked about “${topic}”. I want to respond to that exact situation without guessing missing details.`,
+    context.career
+      ? `I can connect it to your ${context.career.title} path, but I need to know whether your goal is to learn it, use it in a project, or prepare for a job.`
+      : "Tell me whether your goal is to choose a career, learn a skill, build a project, or prepare for a job.",
+    "Add the result you want and your current level in one sentence. I will then give you a direct explanation and a concrete next step.",
+  ]);
+}
+
+function mentorSystemPrompt(context: MentorContext): string {
+  const career = context.career
+    ? `${context.career.title}; ${context.career.completed} of ${context.career.total} roadmap milestones completed`
+    : "not selected yet";
+  const weeklyTime = context.studyHours
+    ? `${context.studyHours} hours per week`
+    : "not provided";
+
+  return `You are Nexvia's practical career mentor for a learner named ${greet(context)}.
+
+Known learner context:
+- Career path: ${career}
+- Study availability: ${weeklyTime}
+- Progress: level ${context.level}, ${context.xp} XP
+
+Answer the learner's actual question directly before giving advice. Be warm, concrete, and concise (normally 100-220 words). Personalize recommendations only from the known context. If key details are missing, state the assumption or ask one focused follow-up question. Do not invent employers, qualifications, salaries, job openings, statistics, links, or user achievements. Do not claim certainty about career fit; explain trade-offs. For medical, legal, financial, or crisis topics, give only general guidance and recommend an appropriate qualified professional. Use short paragraphs or bullets where useful. End with one realistic next action, not generic motivation.`;
+}
+
+async function generateAccurateMentorReply(
+  question: string,
+  context: MentorContext,
+  history: ModelMessage[],
+  userId: string
+): Promise<{ text: string; mode: "ai" | "guided" }> {
+  try {
+    const { text } = await generateText({
+      model: "openai/gpt-5.4-mini",
+      system: mentorSystemPrompt(context),
+      messages: [...history, { role: "user", content: question }],
+      maxOutputTokens: 450,
+      abortSignal: AbortSignal.timeout(15_000),
+      providerOptions: {
+        gateway: {
+          user: userId,
+          tags: ["feature:career-mentor"],
+        },
+      },
+    });
+
+    const reply = text.trim();
+    if (reply.length >= 20) return { text: reply, mode: "ai" };
+  } catch {
+    // Keep the mentor useful when the gateway is disabled, rate-limited, or offline.
+  }
+
+  return { text: generateMentorReply(question, context), mode: "guided" };
 }
 
 function generateMentorReply(question: string, context: MentorContext): string {
@@ -598,6 +861,10 @@ function generateMentorReply(question: string, context: MentorContext): string {
   if (hasAny(q, INTERNSHIP_KEYWORDS) || hasWord(q, "intern")) {
     return internshipReply(context);
   }
+  if (hasAny(q, JOB_SEARCH_KEYWORDS)) return jobSearchReply(q, context);
+  if (hasAny(q, SKILL_KEYWORDS)) return skillsReply(context);
+  if (hasAny(q, TIME_KEYWORDS)) return timeReply(context);
+  if (hasAny(q, EDUCATION_KEYWORDS)) return educationReply(q, context);
   if (hasAny(q, MOTIVATION_KEYWORDS)) return motivationReply(context);
   if (hasAny(q, STUDY_KEYWORDS)) return studyReply(context);
   if (hasAny(q, PROJECT_KEYWORDS)) return projectReply(context);
@@ -605,5 +872,5 @@ function generateMentorReply(question: string, context: MentorContext): string {
   if (hasAny(q, EXPLAIN_KEYWORDS)) return explainReply(q, context);
   if (GREETING_WORDS.some((w) => hasWord(q, w))) return greetingReply(context);
 
-  return defaultReply(context);
+  return defaultReply(question, context);
 }

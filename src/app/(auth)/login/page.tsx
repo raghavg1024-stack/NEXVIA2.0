@@ -8,7 +8,7 @@ import { login, type AuthState } from "../actions";
 const initialState: AuthState = { error: null, success: null };
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-foreground placeholder-slate-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, initialState);
@@ -29,15 +29,15 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative w-full max-w-md rounded-2xl bg-card p-8 shadow-xl ring-1 ring-line"
       >
-        <h1 className="font-display text-2xl uppercase tracking-tight text-slate-900">
+        <h1 className="font-display text-2xl uppercase tracking-tight text-foreground">
           Welcome back
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-400">
           Log in to your Nexvia account.
         </p>
         <form action={formAction} className="mt-8 space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-600">
+            <label htmlFor="email" className="block text-sm font-medium text-slate-400">
               Email
             </label>
             <input
@@ -51,7 +51,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-600">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-400">
               Password
             </label>
             <input
@@ -72,14 +72,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "Logging in..." : "Log in"}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-slate-400">
           New here?{" "}
-          <Link href="/signup" className="font-medium text-accent hover:text-slate-900">
+          <Link href="/signup" className="font-medium text-accent hover:text-foreground">
             Create an account
           </Link>
         </p>

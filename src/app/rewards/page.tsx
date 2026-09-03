@@ -29,11 +29,10 @@ export default async function RewardsPage() {
   return (
     <div className="relative mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">
       <Reveal>
-        <span className="font-display text-sm text-accent">01.</span>
-        <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-slate-900">
+        <h1 className="mt-2 font-display text-3xl uppercase tracking-tight text-foreground">
           Rewards
         </h1>
-        <p className="mt-2 text-slate-500">
+        <p className="mt-2 text-slate-400">
           Keep the momentum going. Check in daily, earn XP, and unlock badges.
         </p>
       </Reveal>
@@ -41,13 +40,13 @@ export default async function RewardsPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <Reveal className="lg:col-span-2">
           <section className="relative overflow-hidden rounded-2xl border border-line bg-card p-6">
-            <h2 className="font-display text-lg uppercase tracking-tight text-slate-900">
+            <h2 className="font-display text-lg uppercase tracking-tight text-foreground">
               Level progress
             </h2>
             <div className="mt-4 flex items-end justify-between">
               <div>
-                <p className="font-display text-4xl text-slate-900">{xp}</p>
-                <p className="mt-1 text-sm text-slate-500">total XP</p>
+                <p className="font-display text-4xl text-foreground">{xp}</p>
+                <p className="mt-1 text-sm text-slate-400">total XP</p>
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-accent">Level {level}</p>
@@ -56,7 +55,7 @@ export default async function RewardsPage() {
                 </p>
               </div>
             </div>
-            <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-800">
               <div
                 className="h-full rounded-full bg-accent"
                 style={{ width: `${progressPct}%` }}
@@ -72,17 +71,17 @@ export default async function RewardsPage() {
 
         <Reveal delay={0.15}>
           <section className="relative flex flex-col overflow-hidden rounded-2xl border border-line bg-card p-6">
-            <h2 className="font-display text-lg uppercase tracking-tight text-slate-900">
+            <h2 className="font-display text-lg uppercase tracking-tight text-foreground">
               Daily streak
             </h2>
             <div className="mt-4 flex items-baseline gap-2">
-              <p className="font-display text-4xl text-slate-900">
+              <p className="font-display text-4xl text-foreground">
                 {profile.current_streak_days}
               </p>
               <span className="text-xl" aria-hidden="true">
                 🔥
               </span>
-              <span className="text-sm text-slate-500">day{profile.current_streak_days === 1 ? "" : "s"}</span>
+              <span className="text-sm text-slate-400">day{profile.current_streak_days === 1 ? "" : "s"}</span>
             </div>
             <p className="mt-2 text-sm text-slate-400">
               Longest streak: {profile.longest_streak_days} days
@@ -95,8 +94,7 @@ export default async function RewardsPage() {
       </div>
 
       <Reveal className="mt-14 flex items-baseline gap-4">
-        <span className="font-display text-sm text-accent">02.</span>
-        <h2 className="font-display text-2xl uppercase tracking-tight text-slate-900">
+        <h2 className="font-display text-2xl uppercase tracking-tight text-foreground">
           Badges
         </h2>
       </Reveal>
@@ -119,8 +117,8 @@ export default async function RewardsPage() {
                 >
                   {badge.icon}
                 </span>
-                <h3 className="mt-3 font-semibold text-slate-900">{badge.name}</h3>
-                <p className="mt-1 text-sm text-slate-500">{badge.description}</p>
+                <h3 className="mt-3 font-semibold text-foreground">{badge.name}</h3>
+                <p className="mt-1 text-sm text-slate-400">{badge.description}</p>
                 <p className="mt-3 text-xs text-slate-400">
                   {isEarned && earnedAt
                     ? `Earned on ${new Date(earnedAt).toLocaleDateString()}`
@@ -133,13 +131,12 @@ export default async function RewardsPage() {
       </Stagger>
 
       <Reveal className="mt-14 flex items-baseline gap-4">
-        <span className="font-display text-sm text-accent">03.</span>
-        <h2 className="font-display text-2xl uppercase tracking-tight text-slate-900">
+        <h2 className="font-display text-2xl uppercase tracking-tight text-foreground">
           XP ledger
         </h2>
       </Reveal>
       {transactions.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-line bg-card p-6 text-slate-500">
+        <p className="mt-4 rounded-2xl border border-line bg-card p-6 text-slate-400">
           No XP yet. Complete your assessment or check in daily to get started.
         </p>
       ) : (
@@ -147,10 +144,10 @@ export default async function RewardsPage() {
           {transactions.map((tx) => (
             <li
               key={tx.id}
-              className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-slate-50"
+              className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-slate-800"
             >
               <div>
-                <p className="font-medium text-slate-900">{tx.reason}</p>
+                <p className="font-medium text-foreground">{tx.reason}</p>
                 <p className="mt-0.5 text-sm text-slate-400">
                   {new Date(tx.created_at).toLocaleDateString()}
                 </p>
@@ -164,8 +161,7 @@ export default async function RewardsPage() {
       )}
 
       <Reveal className="mt-14 flex items-baseline gap-4">
-        <span className="font-display text-sm text-accent">04.</span>
-        <h2 className="font-display text-2xl uppercase tracking-tight text-slate-900">
+        <h2 className="font-display text-2xl uppercase tracking-tight text-foreground">
           Rewards Shop
         </h2>
       </Reveal>
@@ -192,9 +188,9 @@ export default async function RewardsPage() {
               <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 text-lg text-white shadow-lg">
                 {item.icon}
               </div>
-              <h3 className="mt-4 font-semibold text-slate-900">{item.title}</h3>
-              <p className="mt-2 text-sm text-slate-500">{item.description}</p>
-              <span className="mt-4 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+              <h3 className="mt-4 font-semibold text-foreground">{item.title}</h3>
+              <p className="mt-2 text-sm text-slate-400">{item.description}</p>
+              <span className="mt-4 inline-block rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-400">
                 Coming soon
               </span>
             </div>

@@ -10,7 +10,7 @@ create table if not exists "profiles" (
   "full_name" text,
   "email" text,
   "avatar_url" text,
-  "education_level" text check ("education_level" in ('high_school', 'undergraduate', 'graduate', 'self_taught')),
+  "education_level" text check ("education_level" in ('undergraduate', 'graduate', 'self_taught')),
   "study_hours_per_week" integer,
   "goals" text,
   "learning_style" text check ("learning_style" in ('visual', 'auditory', 'reading', 'kinesthetic')),

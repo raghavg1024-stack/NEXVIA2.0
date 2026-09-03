@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { XP_RULES } from "@/lib/data";
+import { CAREERS, XP_RULES } from "@/lib/data";
 import { awardCertificate } from "@/lib/certificates";
 import { grantReward } from "@/lib/rewards";
 import type {
@@ -132,6 +132,100 @@ const GENERIC_PLAN: StarterPlan = [
     ],
   },
 ];
+
+function buildTailoredPlan(careerTitle: string): StarterPlan {
+  const career = CAREERS.find((item) => item.title === careerTitle);
+  if (!career) return GENERIC_PLAN;
+
+  const skills = career.required_skills;
+  const skill = (index: number) => skills[index] ?? skills[0] ?? "professional skills";
+  return [
+    {
+      title: `${career.title} Foundations`,
+      description: `Understand what ${career.title} professionals do and build the first core skills for the role.`,
+      courses: [
+        {
+          title: `Inside the ${career.title} Role`,
+          description: `Learn the responsibilities, common workflows, ethics, and entry-level expectations for ${career.title}.`,
+          duration_weeks: 1,
+        },
+        {
+          title: `${skill(0)} Fundamentals`,
+          description: `Build a practical foundation in ${skill(0)}, one of the key capabilities for this path.`,
+          duration_weeks: 2,
+        },
+        {
+          title: `${skill(1)} Fundamentals`,
+          description: `Practice the essential concepts and workflows behind ${skill(1)}.`,
+          duration_weeks: 2,
+        },
+      ],
+    },
+    {
+      title: "Role-Specific Skills",
+      description: `Develop the capabilities employers and clients expect from a strong ${career.title}.`,
+      courses: [
+        {
+          title: `Applied ${skill(2)}`,
+          description: `Use ${skill(2)} in realistic exercises tied to ${career.title} work.`,
+          duration_weeks: 3,
+        },
+        {
+          title: `Advanced ${skill(0)}`,
+          description: `Move beyond the basics with trade-offs, quality checks, and professional best practices.`,
+          duration_weeks: 3,
+        },
+        {
+          title: `${skill(3)} in Practice`,
+          description: `Strengthen ${skill(3)} through a guided scenario and reflective review.`,
+          duration_weeks: 2,
+        },
+      ],
+    },
+    {
+      title: "Proof of Work",
+      description: `Create credible evidence that you can perform ${career.title} work, not just describe it.`,
+      courses: [
+        {
+          title: "Choose a Realistic Brief",
+          description: `Define a small project, case study, simulation, or supervised experience relevant to ${career.title}.`,
+          duration_weeks: 1,
+        },
+        {
+          title: `${career.title} Capstone`,
+          description: `Complete an end-to-end piece of work that demonstrates ${skills.slice(0, 3).join(", ")}.`,
+          duration_weeks: 4,
+        },
+        {
+          title: "Document Results and Decisions",
+          description: "Explain your process, evidence, outcomes, limitations, and what you would improve next.",
+          duration_weeks: 1,
+        },
+      ],
+    },
+    {
+      title: "Career Launch",
+      description: `Turn your new skills and proof of work into credible ${career.title} opportunities.`,
+      courses: [
+        {
+          title: "Role-Focused Resume and Profile",
+          description: `Translate your skills and proof of work into clear, truthful achievements tailored to ${career.title} roles.`,
+          duration_weeks: 1,
+        },
+        {
+          title: `${career.title} Interview Practice`,
+          description: "Practice role-specific, behavioral, and situational answers with concrete evidence.",
+          duration_weeks: 2,
+        },
+        {
+          title: "Targeted Opportunity Search",
+          description: `Identify suitable entry points, verify requirements, and track focused applications or networking conversations.`,
+          duration_weeks: 2,
+        },
+      ],
+    },
+  ];
+}
 
 const CAREER_PLANS: Record<string, StarterPlan> = {
   "Software Engineer": [
@@ -1019,6 +1113,7 @@ async function loadRoadmap(
     career_title: roadmap.career_title,
     status: roadmap.status,
     created_at: roadmap.created_at,
+    last_activity_at: roadmap.last_activity_at ?? roadmap.created_at,
     milestones,
   };
 }
@@ -1059,41 +1154,44 @@ export async function ensureMilestones(
 
   const { data: existing } = await supabase
     .from("milestones")
-    .select("id")
-    .eq("roadmap_id", roadmapId)
-    .limit(1);
+    .select("id, order_index")
+    .eq("roadmap_id", roadmapId);
 
-  if (!existing || existing.length === 0) {
-    const plan =
-      CAREER_PLANS[roadmap.career_title as string] ?? GENERIC_PLAN;
+  const existingIndexes = new Set(
+    (existing ?? []).map((m) => m.order_index as number)
+  );
 
-    for (let i = 0; i < plan.length; i++) {
-      const starter = plan[i];
+  const careerTitle = roadmap.career_title as string;
+  const plan = CAREER_PLANS[careerTitle] ?? buildTailoredPlan(careerTitle);
 
-      const { data: milestone } = await supabase
-        .from("milestones")
-        .insert({
-          roadmap_id: roadmapId,
-          title: starter.title,
-          description: starter.description,
-          order_index: i,
-          status: i === 0 ? "in_progress" : "locked",
-        })
-        .select("id")
-        .single();
+  for (let i = 0; i < plan.length; i++) {
+    if (existingIndexes.has(i)) continue;
 
-      if (!milestone) continue;
+    const starter = plan[i];
 
-      await supabase.from("courses").insert(
-        starter.courses.map((course) => ({
-          milestone_id: milestone.id,
-          title: course.title,
-          description: course.description,
-          duration_weeks: course.duration_weeks,
-          status: "pending",
-        }))
-      );
-    }
+    const { data: milestone } = await supabase
+      .from("milestones")
+      .insert({
+        roadmap_id: roadmapId,
+        title: starter.title,
+        description: starter.description,
+        order_index: i,
+        status: i === 0 ? "in_progress" : "locked",
+      })
+      .select("id")
+      .single();
+
+    if (!milestone) continue;
+
+    await supabase.from("courses").insert(
+      starter.courses.map((course) => ({
+        milestone_id: milestone.id,
+        title: course.title,
+        description: course.description,
+        duration_weeks: course.duration_weeks,
+        status: "pending",
+      }))
+    );
   }
 
   return loadRoadmap(supabase, roadmapId);
@@ -1138,6 +1236,13 @@ async function siblingMilestone(
     .maybeSingle();
 
   return data ?? null;
+}
+
+async function touchRoadmap(supabase: Supabase, roadmapId: string) {
+  await supabase
+    .from("roadmaps")
+    .update({ last_activity_at: new Date().toISOString() })
+    .eq("id", roadmapId);
 }
 
 export async function updateMilestoneStatus(
@@ -1221,6 +1326,8 @@ export async function updateMilestoneStatus(
     .update({ status: target })
     .eq("id", milestone.id);
   if (error) return { ok: false, message: error.message };
+
+  await touchRoadmap(supabase, milestone.roadmap_id);
 
   if (target === "completed") {
     try {
@@ -1326,6 +1433,15 @@ export async function updateCourseStatus(
     .update({ status: target })
     .eq("id", course.id);
   if (error) return { ok: false, message: error.message };
+
+  const { data: courseMilestone } = await supabase
+    .from("milestones")
+    .select("roadmap_id")
+    .eq("id", course.milestone_id)
+    .maybeSingle();
+  if (courseMilestone?.roadmap_id) {
+    await touchRoadmap(supabase, courseMilestone.roadmap_id);
+  }
 
   if (target === "completed") {
     try {

@@ -6,21 +6,21 @@ import { createGroup, type CommunityFormState } from "@/lib/community";
 const initialState: CommunityFormState = { ok: false, message: "" };
 
 const inputClass =
-  "mt-1 w-full rounded-xl border border-line bg-card px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none";
+  "mt-1 w-full rounded-xl border border-line bg-card px-4 py-2 text-sm text-foreground placeholder:text-slate-400 focus:border-accent focus:outline-none";
 
 export function CreateGroupForm() {
   const [state, formAction, pending] = useActionState(createGroup, initialState);
 
   return (
     <section className="rounded-xl border border-line bg-card p-6">
-      <h2 className="font-display text-lg uppercase tracking-tight text-slate-900">
+      <h2 className="font-display text-lg uppercase tracking-tight text-foreground">
         Create a study group
       </h2>
       <form action={formAction} className="mt-4 space-y-4">
         <div>
           <label
             htmlFor="group-name"
-            className="block text-sm font-medium text-slate-600"
+            className="block text-sm font-medium text-slate-400"
           >
             Group name
           </label>
@@ -36,7 +36,7 @@ export function CreateGroupForm() {
         <div>
           <label
             htmlFor="group-description"
-            className="block text-sm font-medium text-slate-600"
+            className="block text-sm font-medium text-slate-400"
           >
             Description
           </label>
@@ -52,7 +52,7 @@ export function CreateGroupForm() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Creating..." : "Create group"}
         </button>
