@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { motion } from "motion/react";
-import { login, type AuthState } from "../actions";
+import { login, type AuthState } from "@/lib/auth-actions";
 
 const initialState: AuthState = { error: null, success: null };
 
