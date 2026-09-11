@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { type Job, type Scholarship, type Company, type CandidateProfile } from "./types";
 import { calculateJobMatch, calculateScholarshipMatch, expandProfileTerms, termsAreRelated } from "./opportunity-matching";
+import { getCareerJobMatch, isJobRelevantToCareer } from "./career-job-matching";
 
 export interface RemoteJob {
   id: string;
@@ -40,142 +41,6 @@ interface RemoteJobsResponse {
   pagination?: { total: number };
 }
 
-const CAREER_MATCHES: Record<
-  string,
-  { category: string; keywords: string[] }
-> = {
-  "Software Engineer": {
-    category: "programming",
-    keywords: ["software", "engineer", "developer", "full stack", "frontend", "backend", "devops", "engineering"],
-  },
-  "Data Scientist": {
-    category: "data-science",
-    keywords: ["data", "analyst", "scientist", "machine learning", "analytics"],
-  },
-  "UX/UI Designer": {
-    category: "design",
-    keywords: ["designer", "design", "product designer", "ux", "ui"],
-  },
-  "Product Manager": {
-    category: "programming",
-    keywords: ["product manager", "product", "program manager", "technical product"],
-  },
-  "Data Analyst": {
-    category: "data-science",
-    keywords: ["data", "analyst", "analytics", "insights"],
-  },
-  "Technical Writer": {
-    category: "writing",
-    keywords: ["writer", "writing", "content", "documentation", "technical"],
-  },
-  "Cybersecurity Analyst": {
-    category: "programming",
-    keywords: ["security", "cyber", "analyst", "soc", "infosec"],
-  },
-  "Entrepreneur / Startup Founder": {
-    category: "sales",
-    keywords: ["founder", "startup", "business development", "growth"],
-  },
-  "Graphic Designer": {
-    category: "design",
-    keywords: ["graphic designer", "visual designer", "brand designer", "creative designer"],
-  },
-  "Digital Marketer": {
-    category: "marketing",
-    keywords: ["digital marketing", "seo", "content marketing", "growth marketing", "social media"],
-  },
-  "Project Manager": {
-    category: "customer-support",
-    keywords: ["project manager", "program manager", "project coordinator", "delivery manager"],
-  },
-  "Technical Project Manager": {
-    category: "programming",
-    keywords: ["technical project manager", "technical program manager", "engineering project manager"],
-  },
-  "Cloud Architect": {
-    category: "programming",
-    keywords: ["cloud architect", "solutions architect", "cloud engineer", "aws architect", "azure architect"],
-  },
-  "Product Designer": {
-    category: "design",
-    keywords: ["product designer", "ux designer", "ui designer", "interaction designer"],
-  },
-  "Financial Analyst": {
-    category: "data-science",
-    keywords: ["financial analyst", "finance analyst", "investment analyst", "fp&a"],
-  },
-  "Operations Manager": {
-    category: "customer-support",
-    keywords: ["operations manager", "business operations", "operations lead", "operations coordinator"],
-  },
-  "Sales Manager": {
-    category: "sales",
-    keywords: ["sales manager", "account executive", "sales lead", "business development"],
-  },
-  "Data Journalist": {
-    category: "writing",
-    keywords: ["data journalist", "data reporter", "research journalist", "data writer"],
-  },
-  "Data Science Specialist": {
-    category: "data-science",
-    keywords: ["data scientist", "data science", "machine learning scientist", "analytics scientist"],
-  },
-  "AI/ML Engineer": {
-    category: "data-science",
-    keywords: ["machine learning engineer", "ai engineer", "ml engineer", "applied scientist"],
-  },
-  "Quantitative Analyst": {
-    category: "data-science",
-    keywords: ["quantitative analyst", "quant analyst", "quantitative researcher", "risk analyst"],
-  },
-  "Registered Nurse": {
-    category: "customer-support",
-    keywords: ["registered nurse", "telehealth nurse", "clinical nurse", "nurse case manager"],
-  },
-  Chef: {
-    category: "customer-support",
-    keywords: ["chef", "culinary", "recipe developer", "food specialist"],
-  },
-  "Marketing Manager": {
-    category: "marketing",
-    keywords: ["marketing manager", "brand manager", "growth marketing", "product marketing"],
-  },
-  "Social Worker": {
-    category: "customer-support",
-    keywords: ["social worker", "case manager", "care coordinator", "community support"],
-  },
-};
-
-const VALID_CATEGORIES = new Set([
-  "programming",
-  "design",
-  "writing",
-  "sales",
-  "marketing",
-  "customer-support",
-  "data-science",
-]);
-
-function findCareerMatch(careerTitle: string) {
-  for (const [career, match] of Object.entries(CAREER_MATCHES)) {
-    if (careerTitle.toLowerCase().includes(career.toLowerCase())) {
-      return match;
-    }
-  }
-  const slug = careerTitle
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return {
-    category: VALID_CATEGORIES.has(slug) ? slug : "customer-support",
-    keywords: [careerTitle],
-  };
-}
-
-function matchesCareer(job: RemoteJob, keywords: string[]): boolean {
-  const haystack = `${job.title} ${job.description} ${job.category}`.toLowerCase();
-  return keywords.some((keyword) => haystack.includes(keyword.toLowerCase()));
-}
 
 async function fetchCategoryJobs(
   category: string,
@@ -186,7 +51,8 @@ async function fetchCategoryJobs(
   url.searchParams.set("limit", String(limit));
 
   const response = await fetch(url, {
-    cache: "no-store",
+    next: { revalidate: 900 },
+    signal: AbortSignal.timeout(4500),
     headers: { "User-Agent": "Nexvia (career-OS)" },
   });
 
@@ -286,29 +152,29 @@ export async function getJobsForCareer(
   lastSyncedAt?: string | null;
   relaxedMatch?: boolean;
 }> {
-  const { category, keywords } = findCareerMatch(careerTitle);
+  const { category } = getCareerJobMatch(careerTitle);
 
   try {
     const { jobs: cached, lastSyncedAt } = await fetchCachedJobs(category);
 
     if (cached.length > 0) {
-      const matched = cached.filter((job) => matchesCareer(job, keywords)).slice(0, limit);
+      const matched = cached.filter((job) => isJobRelevantToCareer(careerTitle, job)).slice(0, limit);
       return {
-        jobs: matched.length > 0 ? matched : cached.slice(0, limit),
+        jobs: matched,
         category,
         source: "cache",
         lastSyncedAt,
-        relaxedMatch: matched.length === 0,
+        relaxedMatch: false,
       };
     }
 
     const fetched = await fetchCategoryJobs(category, limit * 3);
-    const matched = fetched.filter((job) => matchesCareer(job, keywords)).slice(0, limit);
+    const matched = fetched.filter((job) => isJobRelevantToCareer(careerTitle, job)).slice(0, limit);
     return {
-      jobs: matched.length > 0 ? matched : fetched.slice(0, limit),
+      jobs: matched,
       category,
       source: "live",
-      relaxedMatch: matched.length === 0,
+      relaxedMatch: false,
     };
   } catch (error) {
     return {
@@ -320,17 +186,19 @@ export async function getJobsForCareer(
   }
 }
 
-export async function getSelectedCareerTitle(): Promise<string | null> {
+export async function getSelectedCareerTitle(userId?: string): Promise<string | null> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  let resolvedUserId = userId;
+  if (!resolvedUserId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    resolvedUserId = user?.id;
+  }
+  if (!resolvedUserId) return null;
 
   const { data } = await supabase
     .from("roadmaps")
     .select("career_title")
-    .eq("user_id", user.id)
+    .eq("user_id", resolvedUserId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -341,11 +209,12 @@ export async function getSelectedCareerTitle(): Promise<string | null> {
 export async function getEligibleJobsAndScholarships(userId: string) {
   const supabase = await createClient();
 
-  const [{ data: profile }, { data: jobs }, { data: scholarships }, { data: roadmap }] = await Promise.all([
+  const [{ data: profile }, { data: jobs }, { data: scholarships }, { data: roadmap }, { data: assessment }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase.from("jobs").select("*, companies(name, logo_url)").eq("status", "open"),
     supabase.from("scholarships").select("*").eq("is_active", true).order("deadline", { ascending: true }),
     supabase.from("roadmaps").select("career_title").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("assessments").select("responses").eq("user_id", userId).maybeSingle(),
   ]);
 
   if (!profile) throw new Error("Profile not found");
@@ -356,6 +225,7 @@ export async function getEligibleJobsAndScholarships(userId: string) {
   const major = String(profile.major ?? "").toLowerCase();
   const arrayValue = (value: unknown): string[] => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
+  const activeCareerTitle = typeof roadmap?.career_title === "string" ? roadmap.career_title.trim() : "";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const eligibleJobs = (jobs || []).filter((job: any) => {
     const cgpaOk = job.min_cgpa === null || cgpa >= Number(job.min_cgpa);
@@ -363,7 +233,8 @@ export async function getEligibleJobsAndScholarships(userId: string) {
     const majors = arrayValue(job.eligible_majors);
     const majorTerms = expandProfileTerms([major]);
     const majorOk = majors.length === 0 || !major || majors.some((item) => majorTerms.some((term) => termsAreRelated(term, item)));
-    return cgpaOk && percentageOk && majorOk;
+    const careerOk = activeCareerTitle.length > 0 && isJobRelevantToCareer(activeCareerTitle, job);
+    return cgpaOk && percentageOk && majorOk && careerOk;
   });
 
   const today = new Date().toISOString().slice(0, 10);
@@ -384,13 +255,6 @@ export async function getEligibleJobsAndScholarships(userId: string) {
     const stateOk = states.length === 0 || !profile.domicile_state || states.some((item) => termsAreRelated(profile.domicile_state, item));
     return deadlineOk && cgpaOk && percentageOk && educationOk && majorOk && genderOk && categoryOk && disabilityOk && incomeOk && stateOk;
   });
-
-  // Fetch assessment responses to rank jobs
-  const { data: assessment } = await supabase
-    .from("assessments")
-    .select("responses")
-    .eq("user_id", userId)
-    .single();
 
   let studentSkills: string[] = arrayValue(profile.skill_tags);
   if (assessment && assessment.responses) {

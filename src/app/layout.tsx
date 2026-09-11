@@ -113,6 +113,7 @@ export default async function RootLayout({
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={false}
                   className="group flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-400 transition-all hover:bg-violet-400/[0.09] hover:text-violet-100 hover:shadow-[0_8px_18px_rgba(139,124,255,.1)]"
                 >
                   <span className="mr-3 h-1.5 w-1.5 rounded-full bg-slate-700 transition-colors group-hover:bg-cyan-300" aria-hidden="true" />

@@ -5,6 +5,7 @@ import { getJobsForCareer, getSelectedCareerTitle, getEligibleJobsAndScholarship
 import type { Metadata } from "next";
 import { Reveal, Stagger, StaggerItem } from "../_components/motion";
 import { revalidatePath } from "next/cache";
+import { ApplyButton } from "./apply-button";
 
 export const dynamic = "force-dynamic";
 
@@ -149,9 +150,7 @@ function LocalJobCard({
               <a href={job.application_url} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400">View official listing</a>
             ) : (
               <form action={handleApply}>
-                <button disabled={hasApplied} className="rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50">
-                  {hasApplied ? "Applied" : "Apply Now"}
-                </button>
+                <ApplyButton hasApplied={hasApplied} />
               </form>
             )}
           </div>
@@ -197,18 +196,23 @@ export default async function JobsPage() {
 
   if (!user) redirect("/login");
 
-  const careerTitle = await getSelectedCareerTitle();
-  const { jobs: remoteJobs, category, error, source, lastSyncedAt, relaxedMatch } = await getJobsForCareer(
-    careerTitle ?? "developer",
-    10
-  );
-
-  const { jobs: localJobs } = await getEligibleJobsAndScholarships(user.id);
-  
-  const { data: myApplications } = await supabase
+  const careerTitlePromise = getSelectedCareerTitle(user.id);
+  const localJobsPromise = getEligibleJobsAndScholarships(user.id);
+  const applicationsPromise = supabase
     .from("job_applications")
     .select("job_id")
     .eq("user_id", user.id);
+
+  const careerTitle = await careerTitlePromise;
+  const remoteJobsPromise = careerTitle
+    ? getJobsForCareer(careerTitle, 10)
+    : Promise.resolve({ jobs: [], category: "your career", source: "cache" as const, lastSyncedAt: null, error: undefined });
+  const [{ jobs: localJobs }, { data: myApplications }, remoteResult] = await Promise.all([
+    localJobsPromise,
+    applicationsPromise,
+    remoteJobsPromise,
+  ]);
+  const { jobs: remoteJobs, category, error, source, lastSyncedAt } = remoteResult;
     
   const appliedJobIds = new Set(myApplications?.map((app) => app.job_id) || []);
 
@@ -255,11 +259,6 @@ export default async function JobsPage() {
           <h2 className="font-display text-xl uppercase tracking-tight text-foreground mb-4">
             Remote Board ({category})
           </h2>
-          {relaxedMatch && remoteJobs.length > 0 ? (
-            <div className="mb-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3 text-sm text-slate-300">
-              No exact title match is live right now, so these are nearby roles in the same career category. Review every requirement before applying.
-            </div>
-          ) : null}
           {!careerTitle ? (
             <section className="rounded-2xl border border-line bg-card p-8 text-center">
               <h2 className="font-display text-xl uppercase tracking-tight text-foreground">
@@ -290,7 +289,7 @@ export default async function JobsPage() {
                 No remote matches right now
               </h2>
               <p className="mt-2 text-sm text-slate-400">
-                We searched the {category} category and found no live openings.
+                We found no live roles related to {careerTitle}. Unrelated jobs are hidden; check again when new matching opportunities are added.
               </p>
             </section>
           ) : (
