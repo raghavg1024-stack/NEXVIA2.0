@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   updateCourseStatus,
@@ -20,18 +20,38 @@ export function CourseToggle({
   lockedMessage: string;
 }) {
   const router = useRouter();
-  const [state, action, pending] = useActionState(
-    updateCourseStatus,
-    initialState
-  );
+  const [state, setState] = useState<ActionState>(initialState);
+  const [pending, setPending] = useState(false);
   const updatedNow = state.ok && state.updatedCourseId === course.id;
   const effectiveStatus = updatedNow && state.updatedCourseStatus
     ? state.updatedCourseStatus
     : course.status;
 
-  useEffect(() => {
-    if (updatedNow) router.refresh();
-  }, [updatedNow, router]);
+  async function handleProgress() {
+    if (pending) return;
+
+    setPending(true);
+    setState(initialState);
+    const formData = new FormData();
+    formData.set("courseId", course.id);
+    formData.set(
+      "status",
+      effectiveStatus === "pending" ? "in_progress" : "completed"
+    );
+
+    try {
+      const result = await updateCourseStatus(initialState, formData);
+      setState(result);
+      if (result.ok) router.refresh();
+    } catch {
+      setState({
+        ok: false,
+        message: "The request failed before it could be saved. Please try again.",
+      });
+    } finally {
+      setPending(false);
+    }
+  }
 
   if (effectiveStatus === "completed") {
     return (
@@ -53,15 +73,10 @@ export function CourseToggle({
   }
 
   return (
-    <form action={action} aria-live="polite">
-      <input type="hidden" name="courseId" value={course.id} />
-      <input
-        type="hidden"
-        name="status"
-        value={effectiveStatus === "pending" ? "in_progress" : "completed"}
-      />
+    <div aria-live="polite">
       <button
-        type="submit"
+        type="button"
+        onClick={handleProgress}
         disabled={pending}
         aria-disabled={pending}
         className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-sm font-medium text-emerald-300 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
@@ -77,7 +92,7 @@ export function CourseToggle({
           {state.message}
         </p>
       ) : null}
-    </form>
+    </div>
   );
 }
 
