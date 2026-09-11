@@ -1218,7 +1218,7 @@ export async function createCareerRoadmap(
       user_id: user.id,
       career_id: career.id,
       career_title: career.title,
-      status: "active",
+      status: "draft",
       last_activity_at: now,
     })
     .select("id")
@@ -1628,6 +1628,18 @@ export async function updateCourseStatus(
   if (courseMilestone.status === "completed") {
     return { ok: false, message: "This roadmap step is already completed" };
   }
+  const { data: parentRoadmap, error: roadmapError } = await supabase
+    .from("roadmaps")
+    .select("status")
+    .eq("id", courseMilestone.roadmap_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (roadmapError || !parentRoadmap) {
+    return { ok: false, message: "This roadmap could not be loaded. Refresh and try again." };
+  }
+  if (parentRoadmap.status === "paused" || parentRoadmap.status === "completed") {
+    return { ok: false, message: "This is no longer your active roadmap. Refresh to open your current career path." };
+  }
   const { data: blockedByEarlierStep, error: sequenceError } = await supabase
     .from("milestones")
     .select("id")
@@ -1682,7 +1694,22 @@ export async function updateCourseStatus(
   if (error) return { ok: false, message: error.message };
   if (!updatedCourse) return { ok: false, message: "This activity was already updated. Refreshing your roadmap." };
 
-  await touchRoadmap(supabase, courseMilestone.roadmap_id);
+  if (target === "in_progress") {
+    const { error: startRoadmapError } = await supabase
+      .from("roadmaps")
+      .update({
+        status: "active",
+        last_activity_at: new Date().toISOString(),
+      })
+      .eq("id", courseMilestone.roadmap_id)
+      .eq("user_id", user.id)
+      .in("status", ["draft", "active"]);
+    if (startRoadmapError) {
+      return { ok: false, message: "The task started, but the roadmap could not be activated. Refresh and try again." };
+    }
+  } else {
+    await touchRoadmap(supabase, courseMilestone.roadmap_id);
+  }
 
   if (target === "in_progress") {
     try {

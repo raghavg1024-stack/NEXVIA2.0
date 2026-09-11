@@ -227,8 +227,8 @@ export default async function RoadmapPage() {
           <Reveal>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <h1 className="font-display text-3xl uppercase tracking-tight text-white sm:text-5xl">{roadmap.career_title}</h1>
-              <span className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${roadmap.status === "completed" ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : roadmap.status === "active" ? "border-violet-400/25 bg-violet-400/10 text-violet-200" : "border-white/10 bg-white/[0.04] text-slate-400"}`}>
-                {roadmap.status === "completed" ? "Roadmap complete" : "Active"}
+              <span className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${roadmap.status === "completed" ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : roadmap.status === "active" ? "border-violet-400/25 bg-violet-400/10 text-violet-200" : "border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-100"}`}>
+                {roadmap.status === "completed" ? "Roadmap complete" : roadmap.status === "active" ? "Active" : "Ready to start"}
               </span>
             </div>
             <p className="mt-3 text-sm text-slate-400">{completed} of {total} milestones complete</p>

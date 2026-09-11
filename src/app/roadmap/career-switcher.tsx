@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { ArrowRight, BriefcaseBusiness, Search, ShieldCheck, X } from "lucide-react";
 import {
@@ -90,9 +91,9 @@ export function CareerSwitcher({
         Change career
       </button>
 
-      {open ? (
+      {open ? createPortal(
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-[#050711]/85 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050711]/90 p-4 backdrop-blur-md"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) closeDialog();
@@ -192,7 +193,8 @@ export function CareerSwitcher({
               ) : null}
             </div>
           </section>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </>
   );
