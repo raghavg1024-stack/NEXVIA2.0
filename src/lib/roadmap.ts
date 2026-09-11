@@ -1471,23 +1471,45 @@ export async function updateCourseStatus(
     };
   }
 
-  const { data: courseMilestone } = await supabase
+  const { data: courseMilestone, error: milestoneError } = await supabase
     .from("milestones")
     .select("id, roadmap_id, order_index, status")
     .eq("id", course.milestone_id)
     .maybeSingle();
-  if (!courseMilestone || courseMilestone.status !== "in_progress") {
-    return { ok: false, message: "Complete the previous milestone before working on this activity" };
+  if (milestoneError || !courseMilestone) {
+    return { ok: false, message: "This roadmap step could not be loaded. Refresh and try again." };
   }
-  const { data: blockedByEarlierStep } = await supabase
+  if (courseMilestone.status === "completed") {
+    return { ok: false, message: "This roadmap step is already completed" };
+  }
+  const { data: blockedByEarlierStep, error: sequenceError } = await supabase
     .from("milestones")
     .select("id")
     .eq("roadmap_id", courseMilestone.roadmap_id)
     .lt("order_index", courseMilestone.order_index)
     .neq("status", "completed")
     .limit(1);
+  if (sequenceError) {
+    return { ok: false, message: "Roadmap order could not be verified. Refresh and try again." };
+  }
   if (blockedByEarlierStep?.length) {
     return { ok: false, message: "Complete the previous milestone first" };
+  }
+
+  // Repair older roadmaps whose first unfinished milestone was left locked.
+  // The ownership and sequence checks above ensure only the correct next step
+  // can be activated.
+  if (courseMilestone.status !== "in_progress") {
+    const { data: activatedMilestone, error: activationError } = await supabase
+      .from("milestones")
+      .update({ status: "in_progress" })
+      .eq("id", courseMilestone.id)
+      .neq("status", "completed")
+      .select("id")
+      .maybeSingle();
+    if (activationError || !activatedMilestone) {
+      return { ok: false, message: "This roadmap step could not be activated. Refresh and try again." };
+    }
   }
 
   const { data: updatedCourse, error } = await supabase

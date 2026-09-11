@@ -70,6 +70,9 @@ function MilestoneCard({
   const progress =
     totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
   const canComplete = totalCourses > 0 && completedCourses === totalCourses;
+  const nextCourseIndex = milestone.courses.findIndex(
+    (course) => course.status !== "completed"
+  );
   const isRight = index % 2 === 0;
 
   return (
@@ -129,7 +132,7 @@ function MilestoneCard({
               ) : null}
 
               <ul className="mt-5 space-y-2.5">
-                {milestone.courses.map((course) => (
+                {milestone.courses.map((course, courseIndex) => (
                   <li key={course.id} className="course-quest flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.07] bg-black/20 px-4 py-3 transition-colors hover:border-cyan-300/20 hover:bg-cyan-300/[0.03]">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -140,7 +143,19 @@ function MilestoneCard({
                       </div>
                       <p className="mt-1 text-sm leading-5 text-slate-400">{course.description}</p>
                     </div>
-                    <div className="shrink-0"><CourseToggle course={course} milestoneAvailable={milestoneAvailable} /></div>
+                    <div className="shrink-0">
+                      <CourseToggle
+                        course={course}
+                        courseAvailable={
+                          milestoneAvailable && courseIndex === nextCourseIndex
+                        }
+                        lockedMessage={
+                          milestoneAvailable
+                            ? "Complete the activity above first"
+                            : "Locked"
+                        }
+                      />
+                    </div>
                   </li>
                 ))}
               </ul>

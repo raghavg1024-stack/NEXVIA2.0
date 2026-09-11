@@ -11,10 +11,12 @@ const initialState: ActionState = { ok: true };
 
 export function CourseToggle({
   course,
-  milestoneAvailable,
+  courseAvailable,
+  lockedMessage,
 }: {
   course: Course;
-  milestoneAvailable: boolean;
+  courseAvailable: boolean;
+  lockedMessage: string;
 }) {
   const [state, action, pending] = useActionState(
     updateCourseStatus,
@@ -27,12 +29,16 @@ export function CourseToggle({
     );
   }
 
-  if (!milestoneAvailable) {
-    return <span className="text-xs font-medium text-slate-500">Locked</span>;
+  if (!courseAvailable) {
+    return (
+      <span className="max-w-32 text-right text-xs font-medium leading-4 text-slate-500">
+        {lockedMessage}
+      </span>
+    );
   }
 
   return (
-    <form action={action}>
+    <form action={action} aria-live="polite">
       <input type="hidden" name="courseId" value={course.id} />
       <input type="hidden" name="status" value="completed" />
       <button
@@ -43,7 +49,9 @@ export function CourseToggle({
         {pending ? "Saving…" : "Mark complete"}
       </button>
       {state.ok === false && state.message ? (
-        <p className="mt-1 text-xs text-red-600">{state.message}</p>
+        <p role="alert" className="mt-1 max-w-48 text-xs text-rose-300">
+          {state.message}
+        </p>
       ) : null}
     </form>
   );
