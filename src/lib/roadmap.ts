@@ -12,7 +12,12 @@ import type {
   Roadmap,
 } from "@/lib/types";
 
-export type ActionState = { ok: boolean; message?: string };
+export type ActionState = {
+  ok: boolean;
+  message?: string;
+  updatedCourseId?: string;
+  updatedCourseStatus?: Course["status"];
+};
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -1122,6 +1127,7 @@ async function loadRoadmap(
           .from("courses")
           .select("*")
           .in("milestone_id", milestoneIds)
+          .order("order_index", { ascending: true })
       : { data: [] as Course[] };
 
   const milestones: Milestone[] = (milestoneRows ?? []).map((m) => ({
@@ -1234,11 +1240,12 @@ export async function ensureMilestones(
     if (!milestone) continue;
 
     await supabase.from("courses").insert(
-      starter.courses.map((course) => ({
+      starter.courses.map((course, courseIndex) => ({
         milestone_id: milestone.id,
         title: course.title,
         description: course.description,
         duration_weeks: course.duration_weeks,
+        order_index: courseIndex,
         status: "pending",
       }))
     );
@@ -1452,7 +1459,7 @@ export async function updateCourseStatus(
 
   const { data: course } = await supabase
     .from("courses")
-    .select("id, milestone_id, status")
+    .select("id, milestone_id, order_index, status")
     .eq("id", courseId)
     .single();
 
@@ -1463,11 +1470,16 @@ export async function updateCourseStatus(
   }
 
   const current = course.status as Course["status"];
-  if (current === "completed" || target !== "completed") {
+  const validTransition =
+    (current === "pending" && target === "in_progress") ||
+    (current === "in_progress" && target === "completed");
+  if (!validTransition) {
     return {
       ok: false,
       message:
-        current === "completed" ? "This activity is already completed" : "Invalid status transition",
+        current === "completed"
+          ? "This activity is already completed"
+          : "The activity changed on another device. Refresh and try again.",
     };
   }
 
@@ -1494,6 +1506,20 @@ export async function updateCourseStatus(
   }
   if (blockedByEarlierStep?.length) {
     return { ok: false, message: "Complete the previous milestone first" };
+  }
+
+  const { data: blockedByEarlierCourse, error: courseSequenceError } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("milestone_id", courseMilestone.id)
+    .lt("order_index", course.order_index)
+    .neq("status", "completed")
+    .limit(1);
+  if (courseSequenceError) {
+    return { ok: false, message: "Activity order could not be verified. Refresh and try again." };
+  }
+  if (blockedByEarlierCourse?.length) {
+    return { ok: false, message: "Complete the previous activity first" };
   }
 
   // Repair older roadmaps whose first unfinished milestone was left locked.
@@ -1524,22 +1550,32 @@ export async function updateCourseStatus(
 
   await touchRoadmap(supabase, courseMilestone.roadmap_id);
 
-  if (target === "completed") {
+  if (target === "in_progress") {
+    try {
+      await grantReward("xp", XP_RULES.course_started, "Course started");
+    } catch {}
+  } else {
     try {
       await grantReward("xp", XP_RULES.course_completed, "Course completed");
     } catch {}
   }
 
-  const { data: unfinishedCourses } = await supabase
-    .from("courses")
-    .select("id")
-    .eq("milestone_id", courseMilestone.id)
-    .neq("status", "completed")
-    .limit(1);
-  if (unfinishedCourses !== null && unfinishedCourses.length === 0) {
-    await finishMilestoneAndAdvance(supabase, courseMilestone);
+  if (target === "completed") {
+    const { data: unfinishedCourses } = await supabase
+      .from("courses")
+      .select("id")
+      .eq("milestone_id", courseMilestone.id)
+      .neq("status", "completed")
+      .limit(1);
+    if (unfinishedCourses !== null && unfinishedCourses.length === 0) {
+      await finishMilestoneAndAdvance(supabase, courseMilestone);
+    }
   }
 
   revalidatePath("/roadmap");
-  return { ok: true };
+  return {
+    ok: true,
+    updatedCourseId: course.id,
+    updatedCourseStatus: target,
+  };
 }

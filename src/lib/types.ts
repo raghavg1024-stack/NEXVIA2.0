@@ -124,6 +124,7 @@ export interface Course {
   title: string;
   description: string;
   duration_weeks: number;
+  order_index: number;
   status: "pending" | "in_progress" | "completed";
 }
 

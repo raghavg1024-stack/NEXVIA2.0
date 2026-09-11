@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   updateCourseStatus,
   type ActionState,
@@ -18,14 +19,28 @@ export function CourseToggle({
   courseAvailable: boolean;
   lockedMessage: string;
 }) {
+  const router = useRouter();
   const [state, action, pending] = useActionState(
     updateCourseStatus,
     initialState
   );
+  const updatedNow = state.ok && state.updatedCourseId === course.id;
+  const effectiveStatus = updatedNow && state.updatedCourseStatus
+    ? state.updatedCourseStatus
+    : course.status;
 
-  if (course.status === "completed") {
+  useEffect(() => {
+    if (updatedNow) router.refresh();
+  }, [updatedNow, router]);
+
+  if (effectiveStatus === "completed") {
     return (
-      <span className="text-sm font-medium text-emerald-600">Completed</span>
+      <span
+        role="status"
+        className="text-sm font-semibold text-emerald-300"
+      >
+        Completed ✓
+      </span>
     );
   }
 
@@ -40,13 +55,22 @@ export function CourseToggle({
   return (
     <form action={action} aria-live="polite">
       <input type="hidden" name="courseId" value={course.id} />
-      <input type="hidden" name="status" value="completed" />
+      <input
+        type="hidden"
+        name="status"
+        value={effectiveStatus === "pending" ? "in_progress" : "completed"}
+      />
       <button
         type="submit"
         disabled={pending}
+        aria-disabled={pending}
         className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-sm font-medium text-emerald-300 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
       >
-        {pending ? "Saving…" : "Mark complete"}
+        {pending
+          ? "Saving…"
+          : effectiveStatus === "pending"
+            ? "Start"
+            : "Mark complete"}
       </button>
       {state.ok === false && state.message ? (
         <p role="alert" className="mt-1 max-w-48 text-xs text-rose-300">
