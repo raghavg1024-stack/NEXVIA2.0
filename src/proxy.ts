@@ -44,6 +44,7 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/certificates") ||
     request.nextUrl.pathname.startsWith("/readiness") ||
     request.nextUrl.pathname.startsWith("/mock-interview") ||
+    request.nextUrl.pathname.startsWith("/resume-analysis") ||
     request.nextUrl.pathname.startsWith("/parent") ||
     request.nextUrl.pathname.startsWith("/rewards") ||
     request.nextUrl.pathname.startsWith("/recruiter") ||
@@ -72,6 +73,7 @@ export const config = {
     "/certificates/:path*",
     "/readiness/:path*",
     "/mock-interview/:path*",
+    "/resume-analysis/:path*",
     "/parent/:path*",
     "/rewards/:path*",
     "/recruiter/:path*",

@@ -27,6 +27,13 @@ const quickActions = [
     gradient: "from-sky-500 to-cyan-400",
   },
   {
+    href: "/resume-analysis",
+    title: "Resume Analysis",
+    description: "Get role-specific ATS and skill-gap feedback.",
+    icon: "▤",
+    gradient: "from-cyan-500 to-violet-500",
+  },
+  {
     href: "/community",
     title: "Community",
     description: "Join study groups and learn with peers.",

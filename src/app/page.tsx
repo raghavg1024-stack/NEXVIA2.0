@@ -87,6 +87,7 @@ export default function Home() {
         </nav>
         <Reveal direction="right">
           <div className="flex items-center gap-3">
+            <Link href="/demo" className="hidden rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-2 text-sm font-semibold text-violet-100 transition hover:bg-violet-400/20 lg:inline-flex">Judge demo</Link>
             <Link href="/login" className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white sm:inline-flex">Log in</Link>
             <Link href="/signup" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-violet-100">Start free <ArrowRight className="h-4 w-4" /></Link>
           </div>
@@ -110,6 +111,7 @@ export default function Home() {
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                   <Link href="/signup" className="hero-cta group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(99,80,220,.35)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(99,80,220,.5)]">Start skill mapping <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></Link>
                   <Link href="#experience" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-3.5 text-sm font-semibold text-slate-300 backdrop-blur-md transition hover:border-violet-300/40 hover:bg-white/[0.08] hover:text-white"><Gamepad2 className="h-4 w-4 text-cyan-300" /> See how it works</Link>
+                  <Link href="/demo" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.06] px-6 py-3.5 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/[0.12]"><Sparkles className="h-4 w-4" /> Judge demo</Link>
                 </div>
               </Reveal>
               <Reveal delay={0.34}>

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { CAREERS } from "@/lib/data";
-import type { Career, CareerRecommendation } from "@/lib/types";
+import { CAREERS, skillsAreRelated } from "@/lib/data";
+import type { AssessmentResponse, Career, CareerRecommendation } from "@/lib/types";
 import { getAssessment, selectCareer } from "@/lib/assessment";
 import { Reveal, Stagger, StaggerItem } from "../_components/motion";
 
@@ -40,8 +40,43 @@ function MatchRing({ percentage }: { percentage: number }) {
   );
 }
 
+function matchFactors(career: Career, responses: AssessmentResponse[]) {
+  const answer = (id: string) => responses.find((item) => item.question_id === id)?.answer;
+  const rating = (id: string) => typeof answer(id) === "number" ? Number(answer(id)) : 3;
+  const skills = Array.isArray(answer("skills_2")) ? answer("skills_2") as string[] : [];
+  const personality = String(answer("personality_1") ?? "");
+  const goal = String(answer("goals_1") ?? "");
+  const interests = { analytical: rating("interest_1"), creative: rating("interest_2"), helping: rating("interest_3") };
+  const categoryInterests: Record<string, Array<keyof typeof interests>> = {
+    Technology: ["analytical", "creative"], Finance: ["analytical"], Design: ["creative", "helping"], Media: ["creative", "helping"], Communication: ["creative", "helping"], Business: ["analytical", "creative"], Healthcare: ["helping", "analytical"], Hospitality: ["creative", "helping"], "Social Services": ["helping"],
+  };
+  const personalityCategories: Record<string, string[]> = {
+    "Lead and organize": ["Business", "Healthcare", "Hospitality"],
+    "Analyze and plan": ["Technology", "Finance", "Business"],
+    "Create and brainstorm": ["Design", "Media", "Communication", "Technology"],
+    "Support and execute": ["Healthcare", "Social Services", "Hospitality"],
+  };
+  const relevant = categoryInterests[career.category] ?? ["analytical"];
+  const interestScore = Math.round(relevant.reduce((sum, key) => sum + interests[key], 0) / relevant.length / 5 * 100);
+  const matchingSkills = career.required_skills.filter((required) => skills.some((selected) => skillsAreRelated(selected, required)));
+  const skillScore = career.required_skills.length ? Math.round(matchingSkills.length / career.required_skills.length * 100) : 50;
+  const workStyleScore = (personalityCategories[personality] ?? []).includes(career.category) ? 90 : 55;
+  const goalMatches = goal === "Build my own business"
+    ? ["Entrepreneur / Startup Founder", "Product Manager", "Digital Marketer", "Marketing Manager", "Sales Manager"].includes(career.title)
+    : goal === "Learn a new skill"
+      ? ["Technology", "Design", "Media"].includes(career.category)
+      : goal === "Advance my career" && career.title.includes("Manager");
+
+  return [
+    { label: "Interest signal", value: interestScore },
+    { label: "Current skill coverage", value: skillScore },
+    { label: "Work-style alignment", value: workStyleScore },
+    { label: "Goal alignment", value: goalMatches ? 92 : 60 },
+  ];
+}
+
 export default async function RecommendationsPage() {
-  const { analysisReport, recommendations } = await getAssessment();
+  const { assessment, analysisReport, recommendations } = await getAssessment();
 
   if (!analysisReport || recommendations.length === 0) {
     redirect("/assessment");
@@ -84,7 +119,9 @@ export default async function RecommendationsPage() {
         </Reveal>
 
         <Stagger className="mt-10 grid gap-6 md:grid-cols-2">
-          {matches.map(({ rec, career }) => (
+          {matches.map(({ rec, career }) => {
+            const factors = matchFactors(career, assessment?.responses ?? []);
+            return (
             <StaggerItem key={rec.id}>
               <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-card transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-xl hover:shadow-slate-200">
                 {/* Top accent bar */}
@@ -104,6 +141,21 @@ export default async function RecommendationsPage() {
                       </div>
                     </div>
                     <MatchRing percentage={rec.match_percentage} />
+                  </div>
+
+                  <div className="mt-5 rounded-xl border border-line bg-background/60 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Match evidence</h3>
+                      <span className="text-[10px] uppercase tracking-wider text-slate-500">From your answers</span>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {factors.map((factor) => (
+                        <div key={factor.label}>
+                          <div className="flex justify-between gap-3 text-xs"><span className="text-slate-400">{factor.label}</span><span className="font-semibold text-foreground">{factor.value}%</span></div>
+                          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" style={{ width: `${factor.value}%` }} /></div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <p className="prose prose-invert prose-sm mt-4 max-w-none text-slate-400">
@@ -201,7 +253,7 @@ export default async function RecommendationsPage() {
                 </div>
               </article>
             </StaggerItem>
-          ))}
+          );})}
         </Stagger>
       </div>
     </main>

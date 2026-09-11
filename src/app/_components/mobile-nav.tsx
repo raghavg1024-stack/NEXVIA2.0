@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/academia", label: "Academia Dashboard" },
   { href: "/mentor", label: "AI Mentor" },
   { href: "/mock-interview", label: "Mock Interview" },
+  { href: "/resume-analysis", label: "Resume Analysis" },
   { href: "/community", label: "Community" },
   { href: "/certificates", label: "Certificates" },
   { href: "/readiness", label: "Career Readiness" },
