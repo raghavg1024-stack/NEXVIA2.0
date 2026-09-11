@@ -4,7 +4,7 @@ import { Check, Circle, LockKeyhole, Sparkles } from "lucide-react";
 import { getRoadmap, ensureMilestones } from "@/lib/roadmap";
 import { CAREERS } from "@/lib/data";
 import type { Milestone, MilestoneStatus } from "@/lib/types";
-import { Reveal, TiltCard } from "../_components/motion";
+import { Reveal } from "../_components/motion";
 import { CourseToggle, MilestoneAction } from "./status-toggle";
 import { CareerSwitcher } from "./career-switcher";
 
@@ -90,7 +90,7 @@ function MilestoneCard({
         direction={isRight ? "right" : "left"}
         delay={Math.min(index * 0.04, 0.2)}
       >
-        <TiltCard className="h-full">
+        <div className="h-full">
           <article
             className={`roadmap-card group relative h-full overflow-hidden rounded-3xl border p-5 transition-all sm:p-6 ${
               milestone.status === "locked"
@@ -103,7 +103,7 @@ function MilestoneCard({
             <span className="absolute -right-2 -top-5 font-display text-8xl text-white/[0.025]" aria-hidden="true">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <div className="depth-content relative">
+            <div className="relative">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <span className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/75">
@@ -170,7 +170,7 @@ function MilestoneCard({
               </div>
             </div>
           </article>
-        </TiltCard>
+        </div>
       </Reveal>
       {index === total - 1 ? <div className="roadmap-finish" aria-hidden="true"><Sparkles className="h-4 w-4" /></div> : null}
     </li>
