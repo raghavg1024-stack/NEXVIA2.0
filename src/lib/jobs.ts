@@ -12,6 +12,7 @@ export interface RemoteJob {
   apply_url: string;
   company: string;
   company_logo: string | null;
+  company_website: string | null;
   category: string;
   location: string;
   salary_text: string | null;
@@ -28,7 +29,7 @@ interface RemoteJobsResponse {
     title: string;
     url: string;
     apply_url: string;
-    company: { name: string; logo_url: string | null };
+    company: { name: string; logo_url: string | null; website?: string | null };
     category: { name: string };
     location: string;
     salary_text: string | null;
@@ -61,22 +62,54 @@ async function fetchCategoryJobs(
   }
 
   const data = (await response.json()) as RemoteJobsResponse;
-  return (data.data ?? []).map((job) => ({
-    id: job.id,
-    title: job.title,
-    url: job.url,
-    apply_url: job.apply_url,
-    company: job.company?.name ?? "Unknown",
-    company_logo: job.company?.logo_url ?? null,
-    category: job.category?.name ?? "General",
-    location: job.location ?? "Remote",
-    salary_text: job.salary_text ?? null,
-    salary_min: job.salary_min ?? null,
-    salary_max: job.salary_max ?? null,
-    type: job.type ?? "Full-time",
-    description: job.description ?? "",
-    posted_at: job.posted_at ?? "",
-  }));
+  return (data.data ?? []).flatMap((job) => {
+    const companyWebsite = job.company?.website ?? null;
+    const directUrl = getDirectEmployerUrl(job.apply_url, companyWebsite);
+    if (!directUrl) return [];
+    return [{
+      id: job.id,
+      title: job.title,
+      url: job.url,
+      apply_url: directUrl,
+      company: job.company?.name ?? "Unknown",
+      company_logo: job.company?.logo_url ?? null,
+      company_website: companyWebsite,
+      category: job.category?.name ?? "General",
+      location: job.location ?? "Remote",
+      salary_text: job.salary_text ?? null,
+      salary_min: job.salary_min ?? null,
+      salary_max: job.salary_max ?? null,
+      type: job.type ?? "Full-time",
+      description: job.description ?? "",
+      posted_at: job.posted_at ?? "",
+    }];
+  });
+}
+
+function isRemoteJobsUrl(value: string | null | undefined) {
+  if (!value) return false;
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return hostname === "remotejobs.org" || hostname.endsWith(".remotejobs.org");
+  } catch {
+    return false;
+  }
+}
+
+function isSafeExternalUrl(value: string | null | undefined) {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return (url.protocol === "https:" || url.protocol === "http:") && !isRemoteJobsUrl(value);
+  } catch {
+    return false;
+  }
+}
+
+function getDirectEmployerUrl(applyUrl: string | null | undefined, companyWebsite: string | null | undefined) {
+  if (isSafeExternalUrl(applyUrl)) return applyUrl as string;
+  if (isSafeExternalUrl(companyWebsite)) return companyWebsite as string;
+  return null;
 }
 
 interface CachedJobRow {
@@ -88,6 +121,7 @@ interface CachedJobRow {
   apply_url: string | null;
   company: string;
   company_logo: string | null;
+  company_website: string | null;
   location: string | null;
   salary_text: string | null;
   salary_min: number | null;
@@ -99,13 +133,15 @@ interface CachedJobRow {
 }
 
 function rowToJob(row: CachedJobRow): RemoteJob {
+  const directUrl = getDirectEmployerUrl(row.apply_url, row.company_website);
   return {
     id: row.external_id,
     title: row.title,
     url: row.url,
-    apply_url: row.apply_url ?? row.url,
+    apply_url: directUrl ?? "",
     company: row.company,
     company_logo: row.company_logo,
+    company_website: row.company_website,
     category: row.category_name ?? row.category,
     location: row.location ?? "Remote",
     salary_text: row.salary_text,
@@ -158,7 +194,17 @@ export async function getJobsForCareer(
     const { jobs: cached, lastSyncedAt } = await fetchCachedJobs(category);
 
     if (cached.length > 0) {
-      const matched = cached.filter((job) => isJobRelevantToCareer(careerTitle, job)).slice(0, limit);
+      const matched = cached.filter((job) => job.apply_url && isJobRelevantToCareer(careerTitle, job)).slice(0, limit);
+      if (matched.length === 0) {
+        const fetched = await fetchCategoryJobs(category, limit * 3);
+        return {
+          jobs: fetched.filter((job) => isJobRelevantToCareer(careerTitle, job)).slice(0, limit),
+          category,
+          source: "live",
+          lastSyncedAt,
+          relaxedMatch: false,
+        };
+      }
       return {
         jobs: matched,
         category,
