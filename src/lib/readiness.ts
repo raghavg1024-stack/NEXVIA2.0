@@ -95,7 +95,9 @@ export async function getReadiness(): Promise<CareerReadinessScore | null> {
     const { data: roadmapRows } = await supabase
       .from("roadmaps")
       .select("id")
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
     const roadmapIds = (roadmapRows ?? []).map((row) => row.id);
 
     let completedCourses = 0;

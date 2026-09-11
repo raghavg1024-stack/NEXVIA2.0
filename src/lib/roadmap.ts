@@ -19,6 +19,13 @@ export type ActionState = {
   updatedCourseStatus?: Course["status"];
 };
 
+export type CareerSwitchState = {
+  ok: boolean;
+  message?: string;
+  careerTitle?: string;
+  roadmapId?: string;
+};
+
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
 interface StarterCourse {
@@ -1172,6 +1179,132 @@ export async function getRoadmap(): Promise<Roadmap | null> {
   return loadRoadmap(supabase, roadmap.id);
 }
 
+export async function createCareerRoadmap(
+  careerId: string,
+  recommendationId?: string,
+): Promise<CareerSwitchState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { ok: false, message: "Please sign in again to change your career." };
+
+  const career = CAREERS.find((item) => item.id === careerId);
+  if (!career) return { ok: false, message: "Please choose a valid career." };
+
+  const { data: currentRoadmap, error: currentError } = await supabase
+    .from("roadmaps")
+    .select("id, career_id, status")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (currentError) return { ok: false, message: currentError.message };
+  if (currentRoadmap?.career_id === career.id) {
+    return {
+      ok: true,
+      message: `${career.title} is already your active career roadmap.`,
+      careerTitle: career.title,
+      roadmapId: currentRoadmap.id,
+    };
+  }
+
+  const now = new Date().toISOString();
+  const { data: newRoadmap, error: insertError } = await supabase
+    .from("roadmaps")
+    .insert({
+      user_id: user.id,
+      career_id: career.id,
+      career_title: career.title,
+      status: "active",
+      last_activity_at: now,
+    })
+    .select("id")
+    .single();
+
+  if (insertError || !newRoadmap) {
+    return { ok: false, message: insertError?.message ?? "Could not create the new roadmap." };
+  }
+
+  const generatedRoadmap = await ensureMilestones(newRoadmap.id);
+  if (!generatedRoadmap || generatedRoadmap.milestones.length === 0) {
+    await supabase.from("roadmaps").delete().eq("id", newRoadmap.id).eq("user_id", user.id);
+    return { ok: false, message: "The new roadmap could not be generated. Your current roadmap was not changed." };
+  }
+
+  if (currentRoadmap && currentRoadmap.status !== "completed") {
+    const { error: pauseError } = await supabase
+      .from("roadmaps")
+      .update({ status: "paused", last_activity_at: now })
+      .eq("id", currentRoadmap.id)
+      .eq("user_id", user.id);
+
+    if (pauseError) {
+      await supabase.from("roadmaps").delete().eq("id", newRoadmap.id).eq("user_id", user.id);
+      return { ok: false, message: "Your current roadmap could not be saved before switching. Please try again." };
+    }
+  }
+
+  await supabase
+    .from("career_recommendations")
+    .update({ is_selected: false })
+    .eq("user_id", user.id);
+
+  if (recommendationId) {
+    await supabase
+      .from("career_recommendations")
+      .update({ is_selected: true })
+      .eq("id", recommendationId)
+      .eq("career_id", career.id)
+      .eq("user_id", user.id);
+  } else {
+    const { data: matchingRecommendation } = await supabase
+      .from("career_recommendations")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("career_id", career.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (matchingRecommendation) {
+      await supabase
+        .from("career_recommendations")
+        .update({ is_selected: true })
+        .eq("id", matchingRecommendation.id)
+        .eq("user_id", user.id);
+    }
+  }
+
+  for (const path of [
+    "/roadmap",
+    "/dashboard",
+    "/mentor",
+    "/jobs",
+    "/readiness",
+    "/recommendations",
+  ]) {
+    revalidatePath(path);
+  }
+
+  return {
+    ok: true,
+    message: `Your ${career.title} roadmap is ready.`,
+    careerTitle: career.title,
+    roadmapId: newRoadmap.id,
+  };
+}
+
+export async function changeRoadmapCareer(
+  _prevState: CareerSwitchState,
+  formData: FormData,
+): Promise<CareerSwitchState> {
+  const rawCareerId = formData.get("careerId");
+  const careerId = typeof rawCareerId === "string" ? rawCareerId : "";
+  return createCareerRoadmap(careerId);
+}
+
 export async function ensureMilestones(
   roadmapId: string
 ): Promise<Roadmap | null> {
@@ -1201,7 +1334,8 @@ export async function ensureMilestones(
       .select("growth_opportunities")
       .eq("user_id", roadmap.user_id)
       .eq("career_id", roadmap.career_id)
-      .eq("is_selected", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle(),
     supabase
       .from("profiles")

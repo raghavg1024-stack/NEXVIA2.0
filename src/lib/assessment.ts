@@ -4,12 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   ASSESSMENT_QUESTIONS,
-  CAREERS,
   XP_RULES,
   matchCareers,
   skillsAreRelated,
 } from "@/lib/data";
 import { grantReward } from "@/lib/rewards";
+import { createCareerRoadmap } from "@/lib/roadmap";
 import { createClient } from "@/lib/supabase/server";
 import type {
   AnalysisReport,
@@ -337,68 +337,8 @@ export async function completeAssessment(
 }
 
 export async function selectCareer(careerId: string, recommendationId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { error: clearError } = await supabase
-    .from("career_recommendations")
-    .update({ is_selected: false })
-    .eq("user_id", user!.id)
-    .neq("id", recommendationId);
-  if (clearError) {
-    throw new Error(clearError.message);
-  }
-
-  const { error: selectError } = await supabase
-    .from("career_recommendations")
-    .update({ is_selected: true })
-    .eq("id", recommendationId)
-    .eq("user_id", user!.id);
-  if (selectError) {
-    throw new Error(selectError.message);
-  }
-
-  const career = CAREERS.find((c) => c.id === careerId);
-  const careerTitle = career?.title ?? "Your chosen career path";
-
-  const { data: roadmap } = await supabase
-    .from("roadmaps")
-    .select("id")
-    .eq("user_id", user!.id)
-    .maybeSingle();
-
-  if (roadmap) {
-    const { error } = await supabase
-      .from("roadmaps")
-      .update({
-        career_id: careerId,
-        career_title: careerTitle,
-        status: "draft",
-        last_activity_at: new Date().toISOString(),
-      })
-      .eq("user_id", user!.id);
-    if (error) {
-      throw new Error(error.message);
-    }
-  } else {
-    const { error } = await supabase
-      .from("roadmaps")
-      .insert({
-        user_id: user!.id,
-        career_id: careerId,
-        career_title: careerTitle,
-        status: "draft",
-        last_activity_at: new Date().toISOString(),
-      });
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
+  const result = await createCareerRoadmap(careerId, recommendationId);
+  if (!result.ok) throw new Error(result.message ?? "Could not create the roadmap.");
 
   try {
     await grantReward("xp", XP_RULES.career_selected, "Career selected");

@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Circle, LockKeyhole, Sparkles } from "lucide-react";
 import { getRoadmap, ensureMilestones } from "@/lib/roadmap";
+import { CAREERS } from "@/lib/data";
 import type { Milestone, MilestoneStatus } from "@/lib/types";
 import { Reveal, TiltCard } from "../_components/motion";
 import { CourseToggle, MilestoneAction } from "./status-toggle";
+import { CareerSwitcher } from "./career-switcher";
 
 export const dynamic = "force-dynamic";
 
@@ -200,6 +202,19 @@ export default async function RoadmapPage() {
   const activeMilestoneIndex = roadmap.milestones.findIndex(
     (milestone) => milestone.status !== "completed"
   );
+  const careerChoiceMap = new Map<string, (typeof CAREERS)[number]>();
+  for (const career of CAREERS) {
+    if (!careerChoiceMap.has(career.title) || career.id === roadmap.career_id) {
+      careerChoiceMap.set(career.title, career);
+    }
+  }
+  const careerChoices = Array.from(careerChoiceMap.values()).map(({ id, title, category, description, icon }) => ({
+    id,
+    title,
+    category,
+    description,
+    icon,
+  }));
 
   return (
     <main className="roadmap-world relative w-full flex-1 overflow-hidden px-4 py-12 sm:px-6 lg:py-16">
@@ -223,6 +238,11 @@ export default async function RoadmapPage() {
             <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/[0.06] px-4 py-2 text-xs font-semibold text-cyan-100">
               <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" /> Complete the current milestone to unlock the next one
             </p>
+            <CareerSwitcher
+              careers={careerChoices}
+              currentCareerId={roadmap.career_id}
+              currentCareerTitle={roadmap.career_title}
+            />
             <div className="mx-auto mt-5 h-1.5 max-w-sm overflow-hidden rounded-full bg-white/[0.07]"><div className="xp-bar h-full rounded-full" style={{ width: `${total > 0 ? (completed / total) * 100 : 0}%` }} /></div>
           </Reveal>
         </header>
