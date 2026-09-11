@@ -10,6 +10,8 @@ import {
   Users,
 } from "lucide-react";
 import { Reveal, Stagger, StaggerItem } from "../_components/motion";
+import { redirect } from "next/navigation";
+import { getProfile } from "@/lib/profile";
 
 export const metadata = { title: "Academia Workspace" };
 
@@ -32,7 +34,9 @@ const pipeline = [
   { title: "Match", description: "Connect placement-ready students with internships and employer roles.", icon: BriefcaseBusiness },
 ];
 
-export default function AcademiaWorkspacePage() {
+export default async function AcademiaWorkspacePage() {
+  const profile = await getProfile();
+  if (!profile || profile.user_type !== "academia") redirect("/login/academia");
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
       <Reveal>

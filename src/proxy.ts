@@ -29,10 +29,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthRoute =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/signup");
-
   const isProtectedRoute =
     request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/assessment") ||
@@ -48,11 +44,8 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/parent") ||
     request.nextUrl.pathname.startsWith("/rewards") ||
     request.nextUrl.pathname.startsWith("/recruiter") ||
+    request.nextUrl.pathname.startsWith("/academia") ||
     request.nextUrl.pathname.startsWith("/scholarships");
-
-  if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
 
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -77,8 +70,9 @@ export const config = {
     "/parent/:path*",
     "/rewards/:path*",
     "/recruiter/:path*",
+    "/academia/:path*",
     "/scholarships/:path*",
-    "/login",
-    "/signup",
+    "/login/:path*",
+    "/signup/:path*",
   ],
 };

@@ -1593,7 +1593,7 @@ export async function updateCourseStatus(
 
   const { data: course } = await supabase
     .from("courses")
-    .select("id, milestone_id, order_index, status")
+    .select("id, milestone_id, order_index, status, duration_weeks")
     .eq("id", courseId)
     .single();
 
@@ -1684,9 +1684,21 @@ export async function updateCourseStatus(
     }
   }
 
+  const now = new Date();
+  const timestampUpdate = target === "in_progress"
+    ? {
+        status: target,
+        started_at: now.toISOString(),
+        due_at: new Date(now.getTime() + Math.max(1, course.duration_weeks || 1) * 7 * 86_400_000).toISOString(),
+        completed_at: null,
+      }
+    : {
+        status: target,
+        completed_at: now.toISOString(),
+      };
   const { data: updatedCourse, error } = await supabase
     .from("courses")
-    .update({ status: target })
+    .update(timestampUpdate)
     .eq("id", course.id)
     .eq("status", current)
     .select("id")

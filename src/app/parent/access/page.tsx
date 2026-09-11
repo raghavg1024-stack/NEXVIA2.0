@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ParentAccessForms } from "./parent-access-forms";
 import { loadParentAccess } from "@/lib/parent";
+import { ParentCallSettings } from "./parent-call-settings";
 
 function formatDate(value: string | null) {
   if (!value) return "No recent roadmap activity";
@@ -95,6 +96,13 @@ export default async function ParentAccessPage() {
                 >
                   View real performance
                 </Link>
+                <ParentCallSettings
+                  linkId={ward.linkId}
+                  studentName={ward.name.split(" ")[0] || "your learner"}
+                  studentConsent={ward.studentCallConsent}
+                  phone={ward.parentPhone}
+                  enabled={ward.overdueCallEnabled}
+                />
               </article>
             ))}
           </div>

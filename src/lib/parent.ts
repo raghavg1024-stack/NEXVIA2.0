@@ -98,6 +98,14 @@ export type ParentDashboardData = {
     read_at?: string | null;
     created_at: string;
   }>;
+  overdue_tasks?: Array<{
+    id: string;
+    title: string;
+    due_at: string;
+    days_overdue: number;
+    milestone_title: string;
+    career_title: string;
+  }>;
 };
 
 export type ParentWard = {
@@ -107,6 +115,9 @@ export type ParentWard = {
   name: string;
   careerTitle: string | null;
   lastActiveAt: string | null;
+  studentCallConsent: boolean;
+  parentPhone: string | null;
+  overdueCallEnabled: boolean;
 };
 
 function normalizeInviteCode(value: string) {
@@ -126,10 +137,10 @@ function safeDashboard(value: unknown): ParentDashboardData | null {
 
 export async function createParentInvite(
   _previous: ParentActionState,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<ParentActionState> {
   void _previous;
-  void _formData;
+  const allowOverdueCalls = formData.get("allowOverdueCalls") === "on";
 
   const supabase = await createClient();
   const {
@@ -151,6 +162,7 @@ export async function createParentInvite(
     student_user_id: user.id,
     code_digest: digestInviteCode(code),
     expires_at: expiresAt,
+    allow_overdue_calls: allowOverdueCalls,
   });
 
   if (error) {
@@ -161,8 +173,55 @@ export async function createParentInvite(
   return {
     ok: true,
     code,
-    message: "Share this one-time code privately. It expires in seven days.",
+    message: allowOverdueCalls
+      ? "Share this code privately. Your parent may opt in to overdue-task calls after linking."
+      : "Share this one-time code privately. It expires in seven days.",
   };
+}
+
+export async function saveParentCallPreferences(
+  _previous: ParentActionState,
+  formData: FormData,
+): Promise<ParentActionState> {
+  void _previous;
+  const linkId = String(formData.get("linkId") ?? "");
+  const phone = String(formData.get("phone") ?? "").replace(/[\s()-]/g, "");
+  const enabled = formData.get("enabled") === "on";
+
+  if (!linkId) return { ok: false, message: "The linked learner could not be identified." };
+  if (enabled && !/^\+[1-9][0-9]{7,14}$/.test(phone)) {
+    return { ok: false, message: "Enter the phone number with country code, for example +919876543210." };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, message: "Sign in through the Parent Portal first." };
+
+  const { data: link } = await supabase
+    .from("parent_links")
+    .select("id, student_call_consent_at")
+    .eq("id", linkId)
+    .eq("parent_user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!link) return { ok: false, message: "This parent link is no longer active." };
+  if (enabled && !link.student_call_consent_at) {
+    return { ok: false, message: "The learner did not consent to overdue-task calls. Ask them to create a new consent-enabled code." };
+  }
+
+  const { error } = await supabase
+    .from("parent_links")
+    .update({
+      parent_phone: phone || null,
+      overdue_call_enabled: enabled,
+      parent_call_consent_at: enabled ? new Date().toISOString() : null,
+    })
+    .eq("id", linkId)
+    .eq("parent_user_id", user.id);
+  if (error) return { ok: false, message: "Could not save call preferences. Please try again." };
+
+  revalidatePath("/parent/access");
+  return { ok: true, message: enabled ? "Overdue-task calls are enabled." : "Overdue-task calls are turned off." };
 }
 
 export async function redeemParentInvite(
@@ -299,6 +358,10 @@ export async function loadParentDashboard(studentId?: string): Promise<{
   if (error) return null;
   const dashboard = safeDashboard(data);
   if (!dashboard) return null;
+  const { data: overdue } = await supabase.rpc("get_parent_overdue_tasks", {
+    target_student_id: targetStudentId,
+  });
+  dashboard.overdue_tasks = Array.isArray(overdue) ? overdue : [];
   return { role, linkId, data: dashboard };
 }
 
@@ -317,7 +380,7 @@ export async function loadParentAccess(): Promise<{
   const [parentLinksResult, inviteResult, studentLinksResult] = await Promise.all([
     supabase
       .from("parent_links")
-      .select("id, student_user_id, relationship")
+      .select("id, student_user_id, relationship, student_call_consent_at, parent_phone, overdue_call_enabled")
       .eq("parent_user_id", user.id)
       .eq("status", "active")
       .order("created_at", { ascending: true }),
@@ -352,6 +415,9 @@ export async function loadParentAccess(): Promise<{
           dashboard?.roadmap?.career_title ?? dashboard?.recommendation?.career_title ?? null,
         lastActiveAt:
           dashboard?.roadmap?.last_activity_at ?? dashboard?.student.last_active_day ?? null,
+        studentCallConsent: Boolean(link.student_call_consent_at),
+        parentPhone: link.parent_phone,
+        overdueCallEnabled: link.overdue_call_enabled,
       };
     }),
   );

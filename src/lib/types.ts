@@ -16,7 +16,7 @@ export interface Profile {
   full_name: string | null;
   email: string | null;
   avatar_url: string | null;
-  user_type: "student" | "recruiter";
+  user_type: "student" | "recruiter" | "academia" | "parent";
   cgpa: number | null;
   current_percentage: number | null;
   tenth_percentage: number | null;
@@ -126,6 +126,9 @@ export interface Course {
   duration_weeks: number;
   order_index: number;
   status: "pending" | "in_progress" | "completed";
+  started_at?: string | null;
+  due_at?: string | null;
+  completed_at?: string | null;
 }
 
 export interface Milestone {

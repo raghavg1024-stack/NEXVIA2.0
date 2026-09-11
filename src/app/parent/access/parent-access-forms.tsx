@@ -101,6 +101,10 @@ export function ParentAccessForms() {
         </p>
 
         <form action={inviteAction} className="mt-5">
+          <label className="mb-4 flex items-start gap-3 rounded-xl border border-line bg-background p-3 text-xs leading-5 text-slate-400">
+            <input type="checkbox" name="allowOverdueCalls" className="mt-1 accent-violet-400" />
+            I allow the linked parent to opt in to one supportive automated call when my active roadmap task becomes overdue.
+          </label>
           <button
             type="submit"
             disabled={invitePending}

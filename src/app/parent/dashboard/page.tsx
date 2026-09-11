@@ -155,6 +155,22 @@ export default async function ParentDashboardPage({ searchParams }: PageProps) {
         />
       </section>
 
+      {(data.overdue_tasks ?? []).length > 0 ? (
+        <section className="mt-6 rounded-2xl border border-amber-400/30 bg-amber-400/[0.07] p-6">
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-amber-300">Support may be helpful</p>
+          <h2 className="mt-2 font-display text-xl uppercase text-white">Overdue roadmap tasks</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {data.overdue_tasks?.map((task) => (
+              <div key={task.id} className="rounded-xl border border-amber-300/15 bg-background/70 p-4">
+                <p className="font-semibold text-white">{task.title}</p>
+                <p className="mt-1 text-xs text-slate-400">{task.milestone_title} · due {formatDate(task.due_at)}</p>
+                <p className="mt-2 text-xs font-semibold text-amber-300">{task.days_overdue} day{task.days_overdue === 1 ? "" : "s"} overdue</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-card">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line p-6">
           <div>
