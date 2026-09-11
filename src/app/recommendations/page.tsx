@@ -50,6 +50,14 @@ export default async function RecommendationsPage() {
   const matches = recommendations
     .map((rec) => ({ rec, career: CAREERS.find((c) => c.id === rec.career_id) }))
     .filter((m): m is { rec: CareerRecommendation; career: Career } => Boolean(m.career));
+  const topScore = matches[0]?.rec.match_percentage ?? 0;
+  const secondScore = matches[1]?.rec.match_percentage ?? topScore;
+  const scoreGap = topScore - secondScore;
+  const confidence = topScore >= 82 && scoreGap >= 5
+    ? { label: "High confidence", detail: "Your answers show a clear leading direction." }
+    : topScore >= 68
+      ? { label: "Moderate confidence", detail: "Two or more paths fit you; compare them before choosing." }
+      : { label: "Exploratory result", detail: "Try small projects in these fields and retake the assessment after learning more." };
 
   return (
     <main className="min-h-screen bg-background px-6 py-12 text-slate-300">
@@ -66,6 +74,13 @@ export default async function RecommendationsPage() {
               Based on your assessment, these careers fit your skills, interests, and goals.
             </p>
           </header>
+          <div className="mt-6 rounded-2xl border border-accent/30 bg-accent-soft p-4">
+            <p className="text-sm font-semibold text-accent">{confidence.label}</p>
+            <p className="mt-1 text-sm text-slate-300">{confidence.detail}</p>
+            <p className="mt-2 text-xs text-slate-500">
+              Matches are explainable guidance based on your answers, not a guarantee or final career decision.
+            </p>
+          </div>
         </Reveal>
 
         <Stagger className="mt-10 grid gap-6 md:grid-cols-2">

@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { google } from "@ai-sdk/google";
+import { generateText } from "ai";
 import { CAREERS } from "@/lib/data";
 import type { Career } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
@@ -55,6 +57,7 @@ export interface StartState {
     questionCount: number;
     timePerQuestion: number;
     firstQuestion: InterviewQuestion;
+    currentIndex?: number;
   };
 }
 
@@ -71,6 +74,31 @@ export interface SubmitAnswerState {
   xpEarned?: number;
   nextQuestion?: InterviewQuestion;
   nextIndex?: number;
+}
+
+const MAX_INTERVIEW_ANSWER_LENGTH = 5_000;
+
+async function enhanceInterviewFeedback(
+  answer: string,
+  question: InterviewQuestion,
+  fallback: string
+): Promise<string> {
+  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) return fallback;
+
+  try {
+    const { text } = await generateText({
+      model: google("gemini-2.5-flash"),
+      system:
+        "You are an interview coach. Give one concise, constructive paragraph. Evaluate only the supplied answer against the supplied criteria. Do not invent facts, change the numeric score, make hiring promises, or use protected personal traits. Mention one specific strength and one specific next improvement.",
+      prompt: `Question: ${question.text}\nCriteria: ${question.scoringCriteria.join("; ")}\nCandidate answer: ${answer}\nRule-based baseline: ${fallback}`,
+      maxOutputTokens: 180,
+      abortSignal: AbortSignal.timeout(12_000),
+    });
+    const feedback = text.trim();
+    return feedback.length >= 20 ? feedback : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 /* ── Question Bank ── */
@@ -833,6 +861,9 @@ export async function submitAnswer(
 
   if (!sessionId) return { ok: false, error: "No interview session found." };
   if (!answer) return { ok: false, error: "Please provide an answer before submitting." };
+  if (answer.length > MAX_INTERVIEW_ANSWER_LENGTH) {
+    return { ok: false, error: "Please keep your answer under 5,000 characters." };
+  }
 
   try {
     const supabase = await createClient();
@@ -853,6 +884,12 @@ export async function submitAnswer(
     if (!session) {
       return { ok: false, error: "Interview session not found." };
     }
+    if (session.is_complete) {
+      return { ok: false, error: "This interview has already been completed." };
+    }
+    if (currentIndex !== session.current_index) {
+      return { ok: false, error: "This answer is out of sequence. Refresh and continue from your saved question." };
+    }
 
     const questions = session.questions as unknown as InterviewQuestion[];
     const existingAnswers = (session.answers ?? []) as unknown as InterviewAnswer[];
@@ -864,12 +901,13 @@ export async function submitAnswer(
 
     // Score the answer
     const result = scoreAnswer(answer, question);
+    const feedback = await enhanceInterviewFeedback(answer, question, result.feedback);
 
     const newAnswer: InterviewAnswer = {
       questionId: question.id,
       answer,
       score: result.score,
-      feedback: result.feedback,
+      feedback,
       strengths: result.strengths,
       improvements: result.improvements,
     };
@@ -938,7 +976,7 @@ export async function submitAnswer(
     return {
       ok: true,
       score: result.score,
-      feedback: result.feedback,
+      feedback,
       strengths: result.strengths,
       improvements: result.improvements,
       isComplete,
@@ -984,6 +1022,43 @@ export async function getSession(
       overallScore: data.overall_score,
       summary: data.summary,
       xpEarned: data.xp_earned,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getActiveInterview(): Promise<StartState["session"] | null> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data } = await supabase
+      .from("mock_interviews")
+      .select("id, category, career_title, questions, current_index")
+      .eq("user_id", user.id)
+      .eq("is_complete", false)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!data) return null;
+
+    const questions = (data.questions ?? []) as unknown as InterviewQuestion[];
+    const currentIndex = Math.max(0, Math.min(data.current_index ?? 0, questions.length - 1));
+    const currentQuestion = questions[currentIndex];
+    if (!currentQuestion) return null;
+
+    return {
+      id: data.id,
+      category: data.category as InterviewCategory,
+      careerTitle: data.career_title,
+      questionCount: questions.length,
+      timePerQuestion: 120,
+      firstQuestion: currentQuestion,
+      currentIndex,
     };
   } catch {
     return null;

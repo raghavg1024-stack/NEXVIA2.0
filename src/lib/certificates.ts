@@ -4,15 +4,6 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Certificate } from "@/lib/types";
 
-function randomSuffix(length: number): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let out = "";
-  for (let i = 0; i < length; i++) {
-    out += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return out;
-}
-
 export async function getCertificates(): Promise<Certificate[]> {
   try {
     const supabase = await createClient();
@@ -70,7 +61,7 @@ export async function awardCertificate(
       user_id: user.id,
       roadmap_id: roadmapId,
       title: `Nexvia Certificate — ${careerTitle}`,
-      credential_id: `NX-${Date.now()}-${randomSuffix(4)}`,
+      credential_id: `NX-${crypto.randomUUID().replaceAll("-", "").slice(0, 16).toUpperCase()}`,
       issued_at: issuedAt,
     };
 

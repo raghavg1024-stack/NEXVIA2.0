@@ -83,16 +83,26 @@ export default function AssessmentPage() {
     setAnswer(selected.includes(option) ? selected.filter((o) => o !== option) : [...selected, option]);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const nextIndex = index + 1;
+    const result = await saveProgress(responses, nextIndex);
+    if (result.error) {
+      setError("We couldn't save your progress. Check your connection and try again.");
+      return;
+    }
+    setError(null);
     setIndex(nextIndex);
-    saveProgress(responses, nextIndex);
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     const prevIndex = index - 1;
+    const result = await saveProgress(responses, prevIndex);
+    if (result.error) {
+      setError("We couldn't save your progress. Check your connection and try again.");
+      return;
+    }
+    setError(null);
     setIndex(prevIndex);
-    saveProgress(responses, prevIndex);
   };
 
   const handleComplete = async () => {

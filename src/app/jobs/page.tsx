@@ -198,7 +198,7 @@ export default async function JobsPage() {
   if (!user) redirect("/login");
 
   const careerTitle = await getSelectedCareerTitle();
-  const { jobs: remoteJobs, category, error, source, lastSyncedAt } = await getJobsForCareer(
+  const { jobs: remoteJobs, category, error, source, lastSyncedAt, relaxedMatch } = await getJobsForCareer(
     careerTitle ?? "developer",
     10
   );
@@ -255,6 +255,11 @@ export default async function JobsPage() {
           <h2 className="font-display text-xl uppercase tracking-tight text-foreground mb-4">
             Remote Board ({category})
           </h2>
+          {relaxedMatch && remoteJobs.length > 0 ? (
+            <div className="mb-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3 text-sm text-slate-300">
+              No exact title match is live right now, so these are nearby roles in the same career category. Review every requirement before applying.
+            </div>
+          ) : null}
           {!careerTitle ? (
             <section className="rounded-2xl border border-line bg-card p-8 text-center">
               <h2 className="font-display text-xl uppercase tracking-tight text-foreground">

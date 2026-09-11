@@ -217,6 +217,23 @@ export async function saveProgress(
 export async function completeAssessment(
   responses: AssessmentResponse[]
 ): Promise<{ report: AnalysisReport; recommendations: CareerRecommendation[] }> {
+  const validResponses = new Map(responses.map((response) => [response.question_id, response]));
+  const missingQuestion = ASSESSMENT_QUESTIONS.find((question) => {
+    const response = validResponses.get(question.id);
+    if (!response) return true;
+    if (response.category !== question.category) return true;
+    if (question.type === "rating") {
+      return typeof response.answer !== "number" || response.answer < (question.min ?? 1) || response.answer > (question.max ?? 5);
+    }
+    if (question.type === "multiselect") {
+      return !Array.isArray(response.answer) || response.answer.length === 0 || response.answer.some((value) => !question.options?.includes(value));
+    }
+    return typeof response.answer !== "string" || !response.answer || !question.options?.includes(response.answer);
+  });
+  if (missingQuestion || validResponses.size !== ASSESSMENT_QUESTIONS.length) {
+    throw new Error("Please answer every assessment question before finishing.");
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

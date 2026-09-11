@@ -284,6 +284,7 @@ export async function getJobsForCareer(
   error?: string;
   source: "cache" | "live";
   lastSyncedAt?: string | null;
+  relaxedMatch?: boolean;
 }> {
   const { category, keywords } = findCareerMatch(careerTitle);
 
@@ -293,19 +294,21 @@ export async function getJobsForCareer(
     if (cached.length > 0) {
       const matched = cached.filter((job) => matchesCareer(job, keywords)).slice(0, limit);
       return {
-        jobs: matched,
+        jobs: matched.length > 0 ? matched : cached.slice(0, limit),
         category,
         source: "cache",
         lastSyncedAt,
+        relaxedMatch: matched.length === 0,
       };
     }
 
     const fetched = await fetchCategoryJobs(category, limit * 3);
-    const jobs = fetched.filter((job) => matchesCareer(job, keywords)).slice(0, limit);
+    const matched = fetched.filter((job) => matchesCareer(job, keywords)).slice(0, limit);
     return {
-      jobs,
+      jobs: matched.length > 0 ? matched : fetched.slice(0, limit),
       category,
       source: "live",
+      relaxedMatch: matched.length === 0,
     };
   } catch (error) {
     return {
@@ -363,8 +366,10 @@ export async function getEligibleJobsAndScholarships(userId: string) {
     return cgpaOk && percentageOk && majorOk;
   });
 
+  const today = new Date().toISOString().slice(0, 10);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const eligibleScholarships = (scholarships || []).filter((scholarship: any) => {
+    const deadlineOk = !scholarship.deadline || scholarship.deadline >= today;
     const cgpaOk = scholarship.min_cgpa === null || cgpa >= Number(scholarship.min_cgpa);
     const percentageOk = scholarship.min_percentage === null || percentage >= Number(scholarship.min_percentage);
     const education = arrayValue(scholarship.eligible_education_levels);
@@ -377,7 +382,7 @@ export async function getEligibleJobsAndScholarships(userId: string) {
     const incomeOk = scholarship.max_family_income === null || profile.annual_family_income === null || Number(profile.annual_family_income) <= Number(scholarship.max_family_income);
     const states = arrayValue(scholarship.eligible_states);
     const stateOk = states.length === 0 || !profile.domicile_state || states.some((item) => termsAreRelated(profile.domicile_state, item));
-    return cgpaOk && percentageOk && educationOk && majorOk && genderOk && categoryOk && disabilityOk && incomeOk && stateOk;
+    return deadlineOk && cgpaOk && percentageOk && educationOk && majorOk && genderOk && categoryOk && disabilityOk && incomeOk && stateOk;
   });
 
   // Fetch assessment responses to rank jobs

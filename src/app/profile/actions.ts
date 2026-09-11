@@ -39,10 +39,12 @@ export async function updateProfile(
   const current_percentage = parseNumber("current_percentage");
   const tenth_percentage = parseNumber("tenth_percentage");
   const twelfth_percentage = parseNumber("twelfth_percentage");
-  const skill_tags = String(formData.get("skill_tags") ?? "")
+  const rawSkills = String(formData.get("skill_tags") ?? "")
     .split(",")
     .map((skill) => skill.trim())
-    .filter(Boolean)
+    .filter(Boolean);
+  const skill_tags = rawSkills
+    .filter((skill, index) => rawSkills.findIndex((item) => item.toLowerCase() === skill.toLowerCase()) === index)
     .slice(0, 30);
   const open_to_recruiters = formData.get("open_to_recruiters") === "on";
   const gender = String(formData.get("gender") ?? "").trim();
@@ -54,6 +56,16 @@ export async function updateProfile(
   const outsideRange = (value: number | null, minimum: number, maximum: number) =>
     value !== null && (!Number.isFinite(value) || value < minimum || value > maximum);
   if (outsideRange(cgpa, 0, 10)) return { error: "CGPA must be between 0 and 10." };
+  if (hours !== null && (!Number.isFinite(hours) || hours < 0 || hours > 168)) {
+    return { error: "Study hours must be between 0 and 168 per week." };
+  }
+  const currentYear = new Date().getFullYear();
+  if (graduation_year !== null && (!Number.isInteger(graduation_year) || graduation_year < currentYear - 20 || graduation_year > currentYear + 15)) {
+    return { error: "Please enter a realistic graduation year." };
+  }
+  if (fullName.length > 100 || major.length > 100 || goals.length > 2_000) {
+    return { error: "One or more profile fields are too long." };
+  }
   if ([current_percentage, tenth_percentage, twelfth_percentage, disability_percentage].some((value) => outsideRange(value, 0, 100))) {
     return { error: "Marks and disability percentage must be between 0 and 100." };
   }

@@ -30,6 +30,45 @@ interface StarterMilestone {
 
 type StarterPlan = StarterMilestone[];
 
+function personalizePlan(
+  plan: StarterPlan,
+  growthOpportunities: string[],
+  studyHours: number | null,
+  learningStyle: string | null
+): StarterPlan {
+  const paceFactor = studyHours !== null && studyHours >= 15 ? 0.8 : studyHours !== null && studyHours <= 4 ? 1.5 : 1;
+  const styleLabel: Record<string, string> = {
+    visual: "Use diagrams, demonstrations, and visual notes.",
+    auditory: "Use spoken explanations, discussions, and read-aloud review.",
+    reading: "Use structured reading, written notes, and summaries.",
+    kinesthetic: "Use hands-on exercises, prototypes, and practical repetition.",
+  };
+  const personalized = plan.map((milestone) => ({
+    ...milestone,
+    courses: milestone.courses.map((course) => ({
+      ...course,
+      duration_weeks: Math.max(1, Math.round(course.duration_weeks * paceFactor)),
+      description: `${course.description}${learningStyle && styleLabel[learningStyle] ? ` ${styleLabel[learningStyle]}` : ""}`,
+    })),
+  }));
+
+  if (growthOpportunities.length > 0 && personalized[1]) {
+    personalized[1] = {
+      ...personalized[1],
+      courses: [
+        {
+          title: `Priority Skill Sprint: ${growthOpportunities[0]}`,
+          description: `Close your highest-priority skill gap in ${growthOpportunities[0]} through focused practice and one piece of evidence for your portfolio.`,
+          duration_weeks: Math.max(1, Math.round(2 * paceFactor)),
+        },
+        ...personalized[1].courses,
+      ],
+    };
+  }
+
+  return personalized;
+}
+
 const GENERIC_PLAN: StarterPlan = [
   {
     title: "Foundations",
@@ -1162,7 +1201,30 @@ export async function ensureMilestones(
   );
 
   const careerTitle = roadmap.career_title as string;
-  const plan = CAREER_PLANS[careerTitle] ?? buildTailoredPlan(careerTitle);
+  const [{ data: recommendation }, { data: profile }] = await Promise.all([
+    supabase
+      .from("career_recommendations")
+      .select("growth_opportunities")
+      .eq("user_id", roadmap.user_id)
+      .eq("career_id", roadmap.career_id)
+      .eq("is_selected", true)
+      .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("study_hours_per_week, learning_style")
+      .eq("id", roadmap.user_id)
+      .maybeSingle(),
+  ]);
+  const growthOpportunities = Array.isArray(recommendation?.growth_opportunities)
+    ? recommendation.growth_opportunities.filter((value): value is string => typeof value === "string")
+    : [];
+  const basePlan = CAREER_PLANS[careerTitle] ?? buildTailoredPlan(careerTitle);
+  const plan = personalizePlan(
+    basePlan,
+    growthOpportunities,
+    profile?.study_hours_per_week ?? null,
+    profile?.learning_style ?? null
+  );
 
   for (let i = 0; i < plan.length; i++) {
     if (existingIndexes.has(i)) continue;

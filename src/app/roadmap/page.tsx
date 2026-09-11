@@ -201,6 +201,9 @@ export default async function RoadmapPage() {
               </span>
             </div>
             <p className="mt-3 text-sm text-slate-400">{completed} of {total} milestones complete</p>
+            <p className="mx-auto mt-2 max-w-xl text-xs leading-5 text-slate-500">
+              Built from your selected career, skill gaps, learning style, and weekly study capacity. Update your profile before choosing a path for the best result.
+            </p>
             <div className="mx-auto mt-5 h-1.5 max-w-sm overflow-hidden rounded-full bg-white/[0.07]"><div className="xp-bar h-full rounded-full" style={{ width: `${total > 0 ? (completed / total) * 100 : 0}%` }} /></div>
           </Reveal>
         </header>

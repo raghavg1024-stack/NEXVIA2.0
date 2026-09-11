@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   startInterview,
   submitAnswer,
+  getActiveInterview,
   type StartState,
   type SubmitAnswerState,
   type InterviewCategory,
@@ -231,6 +232,7 @@ function InterviewSession({
   careerTitle,
   questionCount,
   firstQuestion,
+  initialIndex = 0,
   onComplete,
 }: {
   sessionId: string;
@@ -238,6 +240,7 @@ function InterviewSession({
   careerTitle: string | null;
   questionCount: number;
   firstQuestion: InterviewQuestion;
+  initialIndex?: number;
   onComplete: (result: {
     overallScore: number;
     summary: string;
@@ -246,8 +249,15 @@ function InterviewSession({
   }) => void;
 }) {
   const [currentQuestion, setCurrentQuestion] = useState(firstQuestion);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answer, setAnswer] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [answer, setAnswer] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return (
+      window.localStorage.getItem(
+        `nexvia-interview-draft:${sessionId}:${firstQuestion.id}`,
+      ) ?? ""
+    );
+  });
   const [submitted, setSubmitted] = useState(false);
   const [lastResult, setLastResult] = useState<SubmitAnswerState | null>(null);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
@@ -265,6 +275,15 @@ function InterviewSession({
     startListening,
     stopListening,
   } = useSpeechRecognition({ value: answer, onChange: setAnswer });
+  const draftKey = `nexvia-interview-draft:${sessionId}:${currentQuestion.id}`;
+
+  useEffect(() => {
+    if (submitted || !answer) {
+      window.localStorage.removeItem(draftKey);
+      return;
+    }
+    window.localStorage.setItem(draftKey, answer);
+  }, [answer, draftKey, submitted]);
 
   const speakText = useCallback((text: string) => {
     if (!window.speechSynthesis) return;
@@ -315,6 +334,7 @@ function InterviewSession({
   }, [submitState]);
 
   const handleNext = useCallback(() => {
+    window.localStorage.removeItem(draftKey);
     stopListening();
     stopSpeaking();
     if (submitState.isComplete && submitState.overallScore !== undefined) {
@@ -327,14 +347,15 @@ function InterviewSession({
       return;
     }
     if (submitState.nextQuestion && submitState.nextIndex !== undefined) {
+      const nextDraftKey = `nexvia-interview-draft:${sessionId}:${submitState.nextQuestion.id}`;
       setCurrentQuestion(submitState.nextQuestion);
       setCurrentIndex(submitState.nextIndex);
-      setAnswer("");
+      setAnswer(window.localStorage.getItem(nextDraftKey) ?? "");
       setSubmitted(false);
       setLastResult(null);
       handledRef.current = false;
     }
-  }, [submitState, onComplete, stopListening, stopSpeaking]);
+  }, [draftKey, sessionId, submitState, onComplete, stopListening, stopSpeaking]);
 
   const toggleListening = async () => {
     if (isListening) {
@@ -543,6 +564,7 @@ function InterviewSession({
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   rows={6}
+                  maxLength={5000}
                   placeholder="Tap Start answering and speak, or type your answer here."
                   className="w-full resize-none rounded-2xl border border-line bg-slate-800 px-4 py-3 text-sm text-foreground placeholder-slate-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                 />
@@ -585,7 +607,7 @@ function InterviewSession({
 
                 <div className="mt-4 flex items-center justify-between">
                   <p className="text-xs text-slate-400">
-                    {answer.split(/\s+/).filter(Boolean).length} words
+                    {answer.split(/\s+/).filter(Boolean).length} words · {answer.length}/5000 characters
                   </p>
                   <button
                     type="submit"
@@ -611,6 +633,9 @@ function InterviewSession({
           </motion.div>
         )}
       </AnimatePresence>
+      <p className="mt-4 text-center text-xs text-slate-500">
+        Scores combine consistent rule-based criteria with Gemini coaching when available. They support practice and are not a hiring decision.
+      </p>
     </main>
   );
 }
@@ -717,17 +742,42 @@ export default function MockInterviewPage() {
     careerTitle: string | null;
     questionCount: number;
     firstQuestion: InterviewQuestion;
+    currentIndex?: number;
   } | null>(null);
   const [resultData, setResultData] = useState<{
     overallScore: number;
     summary: string;
     xpEarned: number;
   } | null>(null);
+  const [checkingResume, setCheckingResume] = useState(true);
 
   const [startState, startAction, startPending] = useActionState(
     startInterview,
     startInitialState
   );
+
+  useEffect(() => {
+    let active = true;
+    getActiveInterview()
+      .then((session) => {
+        if (!active || !session) return;
+        setSessionData({
+          id: session.id,
+          category: session.category,
+          careerTitle: session.careerTitle,
+          questionCount: session.questionCount,
+          firstQuestion: session.firstQuestion,
+          currentIndex: session.currentIndex,
+        });
+        setView("interview");
+      })
+      .finally(() => {
+        if (active) setCheckingResume(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // When startInterview succeeds, transition to the interview view
   const handledStartRef = useRef<string | null>(null);
@@ -790,8 +840,17 @@ export default function MockInterviewPage() {
         careerTitle={sessionData.careerTitle}
         questionCount={sessionData.questionCount}
         firstQuestion={sessionData.firstQuestion}
+        initialIndex={sessionData.currentIndex}
         onComplete={handleComplete}
       />
+    );
+  }
+
+  if (checkingResume) {
+    return (
+      <main className="flex min-h-[65vh] items-center justify-center">
+        <p className="text-sm text-slate-400">Checking for a saved interview...</p>
+      </main>
     );
   }
 

@@ -49,10 +49,29 @@ export default async function ProfilePage() {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+  const coreProfileFields = [
+    profile?.full_name,
+    profile?.education_level,
+    profile?.major,
+    profile?.learning_style,
+    profile?.study_hours_per_week,
+    profile?.goals,
+    profile?.skill_tags?.length ? profile.skill_tags : null,
+  ];
+  const completedFields = coreProfileFields.filter((value) => value !== null && value !== undefined && value !== "").length;
+  const profileCompleteness = Math.round((completedFields / coreProfileFields.length) * 100);
 
   return (
     <div className="min-h-screen bg-background px-4 py-12 text-slate-300">
       <div className="mx-auto max-w-3xl space-y-6">
+        {profileCompleteness < 100 && (
+          <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4">
+            <p className="text-sm font-semibold text-amber-200">Profile {profileCompleteness}% complete</p>
+            <p className="mt-1 text-sm text-slate-400">
+              Add your education, skills, goals, learning style, and weekly study time for more reliable matches and roadmaps.
+            </p>
+          </div>
+        )}
         <Reveal>
           <div className="overflow-hidden rounded-2xl border border-line bg-card">
             {/* Gradient header */}

@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.verify.json --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/google": "3.0.122",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "@tailwindcss/typography": "^0.5.20",

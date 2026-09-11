@@ -242,6 +242,7 @@ export default function MentorPage() {
             }
           }}
           rows={2}
+          maxLength={2000}
           placeholder="Ask your mentor anything..."
           className="flex-1 resize-none rounded-2xl border border-line bg-card px-4 py-3 text-sm text-foreground placeholder-slate-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
@@ -271,6 +272,14 @@ export default function MentorPage() {
           {sendPending ? "Sending..." : "Send"}
         </button>
       </form>
+      <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-500">
+        <span>
+          {sendState.responseMode === "guided"
+            ? "Gemini is unavailable, so Nexvia used its guided career fallback."
+            : "AI guidance supports decisions; it does not guarantee career outcomes."}
+        </span>
+        <span className="shrink-0">{input.length}/2000</span>
+      </div>
       {voiceError && (
         <div className="mt-2 rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2" role="alert">
           <p className="text-sm font-semibold text-red-300">Voice input is unavailable, but typing still works.</p>

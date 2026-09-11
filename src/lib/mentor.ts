@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { google } from "@ai-sdk/google";
 import { generateText, type ModelMessage } from "ai";
 import { CAREERS } from "@/lib/data";
 import type { Career, MentorMessage } from "@/lib/types";
@@ -26,6 +27,8 @@ export interface MentorClearState {
   ok: boolean;
   error?: string;
 }
+
+const MAX_MENTOR_MESSAGE_LENGTH = 2_000;
 
 export async function getChat(): Promise<MentorMessage[]> {
   try {
@@ -79,6 +82,12 @@ export async function sendMessage(
   const raw = formData.get("content");
   const content = typeof raw === "string" ? raw.trim() : "";
   if (!content) return { ok: false, error: "Please type a message first." };
+  if (content.length > MAX_MENTOR_MESSAGE_LENGTH) {
+    return {
+      ok: false,
+      error: `Please keep your message under ${MAX_MENTOR_MESSAGE_LENGTH.toLocaleString()} characters.`,
+    };
+  }
 
   try {
     const supabase = await createClient();
@@ -106,8 +115,7 @@ export async function sendMessage(
     const reply = await generateAccurateMentorReply(
       content,
       context,
-      history,
-      user.id
+      history
     );
 
     const { data: userMessage } = await supabase
@@ -815,28 +823,21 @@ Known learner context:
 - Study availability: ${weeklyTime}
 - Progress: level ${context.level}, ${context.xp} XP
 
-Answer the learner's actual question directly before giving advice. Be warm, concrete, and concise (normally 100-220 words). Personalize recommendations only from the known context. If key details are missing, state the assumption or ask one focused follow-up question. Do not invent employers, qualifications, salaries, job openings, statistics, links, or user achievements. Do not claim certainty about career fit; explain trade-offs. For medical, legal, financial, or crisis topics, give only general guidance and recommend an appropriate qualified professional. Use short paragraphs or bullets where useful. End with one realistic next action, not generic motivation.`;
+Answer the learner's actual career or education question directly before giving advice. Be warm, concrete, and concise (normally 100-220 words). Personalize recommendations only from the known context. If key details are missing, state the assumption or ask one focused follow-up question. For unrelated requests, briefly explain that you are a career mentor and redirect toward careers, learning, applications, or interview preparation. Do not invent employers, qualifications, salaries, job openings, statistics, links, or user achievements. Do not claim certainty about career fit; explain trade-offs. Never use gender, caste, disability, family income, college prestige, religion, ethnicity, or other protected traits to judge career suitability. For medical, legal, financial, dangerous, or crisis topics, give only general safety-focused guidance and recommend an appropriate qualified professional or local emergency support when urgent. Use short paragraphs or bullets where useful. End with one realistic next action, not generic motivation.`;
 }
 
 async function generateAccurateMentorReply(
   question: string,
   context: MentorContext,
-  history: ModelMessage[],
-  userId: string
+  history: ModelMessage[]
 ): Promise<{ text: string; mode: "ai" | "guided" }> {
   try {
     const { text } = await generateText({
-      model: "openai/gpt-5.4-mini",
+      model: google("gemini-2.5-flash"),
       system: mentorSystemPrompt(context),
       messages: [...history, { role: "user", content: question }],
       maxOutputTokens: 450,
       abortSignal: AbortSignal.timeout(15_000),
-      providerOptions: {
-        gateway: {
-          user: userId,
-          tags: ["feature:career-mentor"],
-        },
-      },
     });
 
     const reply = text.trim();
