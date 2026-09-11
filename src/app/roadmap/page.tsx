@@ -56,12 +56,12 @@ function MilestoneCard({
   milestone,
   index,
   total,
-  canStart,
+  milestoneAvailable,
 }: {
   milestone: Milestone;
   index: number;
   total: number;
-  canStart: boolean;
+  milestoneAvailable: boolean;
 }) {
   const completedCourses = milestone.courses.filter(
     (course) => course.status === "completed"
@@ -140,16 +140,14 @@ function MilestoneCard({
                       </div>
                       <p className="mt-1 text-sm leading-5 text-slate-400">{course.description}</p>
                     </div>
-                    <div className="shrink-0"><CourseToggle course={course} /></div>
+                    <div className="shrink-0"><CourseToggle course={course} milestoneAvailable={milestoneAvailable} /></div>
                   </li>
                 ))}
               </ul>
 
               <div className="mt-5 border-t border-white/[0.08] pt-4">
                 <MilestoneAction
-                  milestoneId={milestone.id}
                   status={milestone.status}
-                  canStart={canStart}
                   canComplete={canComplete}
                 />
               </div>
@@ -184,6 +182,9 @@ export default async function RoadmapPage() {
   const completed = roadmap.milestones.filter(
     (milestone) => milestone.status === "completed"
   ).length;
+  const activeMilestoneIndex = roadmap.milestones.findIndex(
+    (milestone) => milestone.status !== "completed"
+  );
 
   return (
     <main className="roadmap-world relative w-full flex-1 overflow-hidden px-4 py-12 sm:px-6 lg:py-16">
@@ -204,20 +205,30 @@ export default async function RoadmapPage() {
             <p className="mx-auto mt-2 max-w-xl text-xs leading-5 text-slate-500">
               Built from your selected career, skill gaps, learning style, and weekly study capacity. Update your profile before choosing a path for the best result.
             </p>
+            <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/[0.06] px-4 py-2 text-xs font-semibold text-cyan-100">
+              <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" /> Complete the current milestone to unlock the next one
+            </p>
             <div className="mx-auto mt-5 h-1.5 max-w-sm overflow-hidden rounded-full bg-white/[0.07]"><div className="xp-bar h-full rounded-full" style={{ width: `${total > 0 ? (completed / total) * 100 : 0}%` }} /></div>
           </Reveal>
         </header>
 
         <ol className="roadmap-route">
-          {roadmap.milestones.map((milestone, index) => (
-            <MilestoneCard
-              key={milestone.id}
-              milestone={milestone}
-              index={index}
-              total={total}
-              canStart={index === 0 || roadmap.milestones[index - 1].status === "completed"}
-            />
-          ))}
+          {roadmap.milestones.map((milestone, index) => {
+            const sequenceStatus: MilestoneStatus = milestone.status === "completed"
+              ? "completed"
+              : index === activeMilestoneIndex
+                ? "in_progress"
+                : "locked";
+            return (
+              <MilestoneCard
+                key={milestone.id}
+                milestone={{ ...milestone, status: sequenceStatus }}
+                index={index}
+                total={total}
+                milestoneAvailable={index === activeMilestoneIndex}
+              />
+            );
+          })}
         </ol>
       </div>
     </main>

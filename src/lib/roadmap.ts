@@ -1097,18 +1097,6 @@ const VALID_MILESTONE_STATUS: readonly MilestoneStatus[] = [
   "completed",
 ];
 
-const NEXT_COURSE_STATUS: Record<Course["status"], Course["status"] | null> = {
-  pending: "in_progress",
-  in_progress: "completed",
-  completed: null,
-};
-
-const NEXT_MILESTONE_STATUS: Record<MilestoneStatus, MilestoneStatus | null> = {
-  locked: "in_progress",
-  in_progress: "completed",
-  completed: null,
-};
-
 async function loadRoadmap(
   supabase: Supabase,
   roadmapId: string
@@ -1256,6 +1244,21 @@ export async function ensureMilestones(
     );
   }
 
+  const sequencedRoadmap = await loadRoadmap(supabase, roadmapId);
+  if (!sequencedRoadmap) return null;
+
+  const firstIncompleteIndex = sequencedRoadmap.milestones.findIndex(
+    (milestone) => milestone.status !== "completed",
+  );
+  await Promise.all(
+    sequencedRoadmap.milestones.map(async (milestone, index) => {
+      if (milestone.status === "completed") return;
+      const expectedStatus: MilestoneStatus = index === firstIncompleteIndex ? "in_progress" : "locked";
+      if (milestone.status === expectedStatus) return;
+      await supabase.from("milestones").update({ status: expectedStatus }).eq("id", milestone.id);
+    }),
+  );
+
   return loadRoadmap(supabase, roadmapId);
 }
 
@@ -1307,6 +1310,64 @@ async function touchRoadmap(supabase: Supabase, roadmapId: string) {
     .eq("id", roadmapId);
 }
 
+async function finishMilestoneAndAdvance(
+  supabase: Supabase,
+  milestone: { id: string; roadmap_id: string; order_index: number },
+): Promise<boolean> {
+  const { data: completedMilestone, error } = await supabase
+    .from("milestones")
+    .update({ status: "completed" })
+    .eq("id", milestone.id)
+    .eq("status", "in_progress")
+    .select("id")
+    .maybeSingle();
+  if (error || !completedMilestone) return false;
+
+  await touchRoadmap(supabase, milestone.roadmap_id);
+  try {
+    await grantReward("xp", XP_RULES.milestone_completed, "Milestone completed");
+  } catch {}
+
+  const next = await siblingMilestone(
+    supabase,
+    milestone.roadmap_id,
+    milestone.order_index,
+    "next",
+  );
+  if (next && next.status !== "completed") {
+    await supabase
+      .from("milestones")
+      .update({ status: "in_progress" })
+      .eq("id", next.id);
+  }
+
+  const { data: remaining } = await supabase
+    .from("milestones")
+    .select("id")
+    .eq("roadmap_id", milestone.roadmap_id)
+    .neq("status", "completed");
+
+  if (remaining !== null && remaining.length === 0) {
+    const roadmapId = milestone.roadmap_id;
+    await supabase.from("roadmaps").update({ status: "completed" }).eq("id", roadmapId);
+    try {
+      await grantReward("xp", XP_RULES.roadmap_completed, "Roadmap completed");
+    } catch {}
+    try {
+      const { data: completedRoadmap } = await supabase
+        .from("roadmaps")
+        .select("career_title")
+        .eq("id", roadmapId)
+        .single();
+      if (completedRoadmap?.career_title) {
+        await awardCertificate(roadmapId, completedRoadmap.career_title);
+      }
+    } catch {}
+  }
+
+  return true;
+}
+
 export async function updateMilestoneStatus(
   prevState: ActionState,
   formData: FormData
@@ -1343,100 +1404,22 @@ export async function updateMilestoneStatus(
   }
 
   const current = milestone.status as MilestoneStatus;
-  if (NEXT_MILESTONE_STATUS[current] !== target) {
+  if (current !== "in_progress" || target !== "completed") {
     return {
       ok: false,
       message:
-        current === "completed"
-          ? "Completed milestones can't be changed"
-          : "Invalid status transition",
+        current === "completed" ? "Completed milestones can't be changed" : "This milestone is still locked",
     };
   }
-
-  if (target === "in_progress") {
-    const previous = await siblingMilestone(
-      supabase,
-      milestone.roadmap_id,
-      milestone.order_index,
-      "prev"
-    );
-    if (previous && previous.status !== "completed") {
-      return {
-        ok: false,
-        message: "Complete the previous milestone first",
-      };
-    }
+  const { data: courses } = await supabase
+    .from("courses")
+    .select("status")
+    .eq("milestone_id", milestone.id);
+  if (courses?.some((course) => course.status !== "completed")) {
+    return { ok: false, message: "Complete all courses first" };
   }
-
-  if (target === "completed") {
-    const { data: courses } = await supabase
-      .from("courses")
-      .select("status")
-      .eq("milestone_id", milestone.id);
-
-    const notDone =
-      courses !== null &&
-      courses.length > 0 &&
-      courses.some((c) => c.status !== "completed");
-    if (notDone) {
-      return { ok: false, message: "Complete all courses first" };
-    }
-  }
-
-  const { error } = await supabase
-    .from("milestones")
-    .update({ status: target })
-    .eq("id", milestone.id);
-  if (error) return { ok: false, message: error.message };
-
-  await touchRoadmap(supabase, milestone.roadmap_id);
-
-  if (target === "completed") {
-    try {
-      await grantReward("xp", XP_RULES.milestone_completed, "Milestone completed");
-    } catch {}
-
-    const next = await siblingMilestone(
-      supabase,
-      milestone.roadmap_id,
-      milestone.order_index,
-      "next"
-    );
-    if (next && next.status === "locked") {
-      await supabase
-        .from("milestones")
-        .update({ status: "in_progress" })
-        .eq("id", next.id);
-    }
-
-    const { data: remaining } = await supabase
-      .from("milestones")
-      .select("id")
-      .eq("roadmap_id", milestone.roadmap_id)
-      .neq("status", "completed");
-
-    if (remaining !== null && remaining.length === 0) {
-      const roadmapId = milestone.roadmap_id;
-      await supabase
-        .from("roadmaps")
-        .update({ status: "completed" })
-        .eq("id", roadmapId);
-
-      try {
-        await grantReward("xp", XP_RULES.roadmap_completed, "Roadmap completed");
-      } catch {}
-
-      try {
-        const { data: completedRoadmap } = await supabase
-          .from("roadmaps")
-          .select("career_title")
-          .eq("id", roadmapId)
-          .single();
-        if (completedRoadmap?.career_title) {
-          await awardCertificate(roadmapId, completedRoadmap.career_title);
-        }
-      } catch {}
-    }
+  if (!(await finishMilestoneAndAdvance(supabase, milestone))) {
+    return { ok: false, message: "Milestone could not be completed. Refresh and try again." };
   }
 
   revalidatePath("/roadmap");
@@ -1480,35 +1463,59 @@ export async function updateCourseStatus(
   }
 
   const current = course.status as Course["status"];
-  if (NEXT_COURSE_STATUS[current] !== target) {
+  if (current === "completed" || target !== "completed") {
     return {
       ok: false,
       message:
-        current === "completed"
-          ? "Completed courses can't be changed"
-          : "Invalid status transition",
+        current === "completed" ? "This activity is already completed" : "Invalid status transition",
     };
   }
 
-  const { error } = await supabase
-    .from("courses")
-    .update({ status: target })
-    .eq("id", course.id);
-  if (error) return { ok: false, message: error.message };
-
   const { data: courseMilestone } = await supabase
     .from("milestones")
-    .select("roadmap_id")
+    .select("id, roadmap_id, order_index, status")
     .eq("id", course.milestone_id)
     .maybeSingle();
-  if (courseMilestone?.roadmap_id) {
-    await touchRoadmap(supabase, courseMilestone.roadmap_id);
+  if (!courseMilestone || courseMilestone.status !== "in_progress") {
+    return { ok: false, message: "Complete the previous milestone before working on this activity" };
   }
+  const { data: blockedByEarlierStep } = await supabase
+    .from("milestones")
+    .select("id")
+    .eq("roadmap_id", courseMilestone.roadmap_id)
+    .lt("order_index", courseMilestone.order_index)
+    .neq("status", "completed")
+    .limit(1);
+  if (blockedByEarlierStep?.length) {
+    return { ok: false, message: "Complete the previous milestone first" };
+  }
+
+  const { data: updatedCourse, error } = await supabase
+    .from("courses")
+    .update({ status: target })
+    .eq("id", course.id)
+    .eq("status", current)
+    .select("id")
+    .maybeSingle();
+  if (error) return { ok: false, message: error.message };
+  if (!updatedCourse) return { ok: false, message: "This activity was already updated. Refreshing your roadmap." };
+
+  await touchRoadmap(supabase, courseMilestone.roadmap_id);
 
   if (target === "completed") {
     try {
       await grantReward("xp", XP_RULES.course_completed, "Course completed");
     } catch {}
+  }
+
+  const { data: unfinishedCourses } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("milestone_id", courseMilestone.id)
+    .neq("status", "completed")
+    .limit(1);
+  if (unfinishedCourses !== null && unfinishedCourses.length === 0) {
+    await finishMilestoneAndAdvance(supabase, courseMilestone);
   }
 
   revalidatePath("/roadmap");

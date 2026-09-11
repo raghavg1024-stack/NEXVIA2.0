@@ -3,14 +3,19 @@
 import { useActionState } from "react";
 import {
   updateCourseStatus,
-  updateMilestoneStatus,
   type ActionState,
 } from "@/lib/roadmap";
 import type { Course, MilestoneStatus } from "@/lib/types";
 
 const initialState: ActionState = { ok: true };
 
-export function CourseToggle({ course }: { course: Course }) {
+export function CourseToggle({
+  course,
+  milestoneAvailable,
+}: {
+  course: Course;
+  milestoneAvailable: boolean;
+}) {
   const [state, action, pending] = useActionState(
     updateCourseStatus,
     initialState
@@ -22,23 +27,20 @@ export function CourseToggle({ course }: { course: Course }) {
     );
   }
 
-  const next: Course["status"] =
-    course.status === "pending" ? "in_progress" : "completed";
+  if (!milestoneAvailable) {
+    return <span className="text-xs font-medium text-slate-500">Locked</span>;
+  }
 
   return (
     <form action={action}>
       <input type="hidden" name="courseId" value={course.id} />
-      <input type="hidden" name="status" value={next} />
+      <input type="hidden" name="status" value="completed" />
       <button
         type="submit"
         disabled={pending}
-        className={
-          next === "in_progress"
-            ? "rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:opacity-50"
-            : "rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
-        }
+        className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-sm font-medium text-emerald-300 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
       >
-        {next === "in_progress" ? "Start" : "Mark complete"}
+        {pending ? "Saving…" : "Mark complete"}
       </button>
       {state.ok === false && state.message ? (
         <p className="mt-1 text-xs text-red-600">{state.message}</p>
@@ -48,51 +50,17 @@ export function CourseToggle({ course }: { course: Course }) {
 }
 
 export function MilestoneAction({
-  milestoneId,
   status,
-  canStart,
   canComplete,
 }: {
-  milestoneId: string;
   status: MilestoneStatus;
-  canStart: boolean;
   canComplete: boolean;
 }) {
-  const [state, action, pending] = useActionState(
-    updateMilestoneStatus,
-    initialState
-  );
-
   if (status === "completed") return null;
-
-  let next: MilestoneStatus | null = null;
-  if (status === "locked" && canStart) next = "in_progress";
-  if (status === "in_progress" && canComplete) next = "completed";
-
-  if (!next) {
-    return (
-      <p className="text-sm text-slate-400">
-        {status === "locked"
-          ? "Complete the previous milestone to unlock this one."
-          : "Complete all courses to finish this milestone."}
-      </p>
-    );
-  }
-
-  return (
-    <form action={action}>
-      <input type="hidden" name="milestoneId" value={milestoneId} />
-      <input type="hidden" name="status" value={next} />
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-lg border border-accent/40 bg-accent-soft px-3 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white disabled:opacity-50"
-      >
-        {next === "in_progress" ? "Start milestone" : "Mark milestone complete"}
-      </button>
-      {state.ok === false && state.message ? (
-        <p className="mt-1 text-xs text-red-600">{state.message}</p>
-      ) : null}
-    </form>
-  );
+  const message = status === "locked"
+    ? "Complete the previous milestone to unlock this step."
+    : canComplete
+      ? "Finishing this step and unlocking the next milestone…"
+      : "Complete every activity above. The next milestone unlocks automatically.";
+  return <p className="text-sm text-slate-400">{message}</p>;
 }
