@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { FileSearch, ShieldCheck, Sparkles, Target, Upload } from "lucide-react";
+import { AlertTriangle, FileSearch, ShieldCheck, Sparkles, Target, Upload } from "lucide-react";
 import {
   analyzeResume,
   resumeAnalysisInitialState,
@@ -47,7 +47,7 @@ export default function ResumeAnalysisPage() {
         </p>
       </header>
 
-      <form action={formAction} className="mt-8 grid gap-5 rounded-3xl border border-violet-400/20 bg-card p-6 shadow-2xl shadow-black/20 md:grid-cols-[1fr_auto] md:items-end">
+      <form action={formAction} aria-busy={pending} className="mt-8 grid gap-5 rounded-3xl border border-violet-400/20 bg-card p-6 shadow-2xl shadow-black/20 md:grid-cols-[1fr_auto] md:items-end">
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block">
             <span className="text-sm font-semibold text-foreground">Resume PDF</span>
@@ -55,6 +55,7 @@ export default function ResumeAnalysisPage() {
               <Upload className="h-4 w-4 text-violet-300" />
               <input name="resume" type="file" accept="application/pdf,.pdf" required className="min-w-0 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-violet-500 file:px-3 file:py-2 file:font-semibold file:text-white" />
             </span>
+            <span className="mt-2 block text-xs text-slate-500">Text-based PDF, maximum 3 MB</span>
           </label>
           <label className="block">
             <span className="text-sm font-semibold text-foreground">Target role</span>
@@ -65,6 +66,12 @@ export default function ResumeAnalysisPage() {
           <FileSearch className="h-4 w-4" /> {pending ? "Analysing…" : "Analyse resume"}
         </button>
       </form>
+
+      {pending && (
+        <p role="status" aria-live="polite" className="mt-5 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100">
+          Reading the PDF and checking its evidence. This can take up to 45 seconds.
+        </p>
+      )}
 
       {state.error && (
         <p role="alert" className="mt-5 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{state.error}</p>
@@ -82,7 +89,29 @@ export default function ResumeAnalysisPage() {
                 <h2 className="mt-2 text-xl font-bold text-white">{state.targetRole}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-300">{state.result.summary}</p>
                 <p className="mt-3 text-xs text-slate-500">This is an AI estimate, not an official employer ATS score or hiring guarantee.</p>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                  <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-cyan-200">{state.result.confidence} confidence</span>
+                  <span className="rounded-full border border-violet-400/25 bg-violet-400/10 px-3 py-1 text-violet-200">{state.result.documentQuality.replaceAll("_", " ")}</span>
+                </div>
               </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-line bg-card p-5">
+            <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">How the score was calculated</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {[
+                ["ATS format", state.result.scoreBreakdown.atsParseability, 20],
+                ["Sections", state.result.scoreBreakdown.essentialSections, 20],
+                ["Evidence", state.result.scoreBreakdown.evidenceAndImpact, 25],
+                ["Role match", state.result.scoreBreakdown.targetRoleAlignment, 25],
+                ["Clarity", state.result.scoreBreakdown.clarityAndConciseness, 10],
+              ].map(([label, score, maximum]) => (
+                <div key={String(label)} className="rounded-xl border border-line bg-background p-4">
+                  <p className="text-xs text-slate-500">{label}</p>
+                  <p className="mt-1 text-lg font-bold text-white">{score}<span className="text-xs font-normal text-slate-500"> / {maximum}</span></p>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -98,6 +127,15 @@ export default function ResumeAnalysisPage() {
             <p className="mt-3 text-sm leading-6 text-slate-300">{state.result.roleAlignment}</p>
             <div className="mt-4 flex flex-wrap gap-2">{state.result.detectedSkills.map((skill) => <span key={skill} className="rounded-full border border-violet-400/25 bg-violet-400/10 px-3 py-1 text-xs text-violet-200">{skill}</span>)}</div>
           </section>
+
+          {state.result.warnings.length > 0 && (
+            <section className="rounded-2xl border border-amber-400/25 bg-amber-400/5 p-5">
+              <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-300" /><h2 className="text-sm font-bold text-amber-100">Important checks</h2></div>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-300">
+                {state.result.warnings.map((warning) => <li key={warning}>• {warning}</li>)}
+              </ul>
+            </section>
+          )}
         </div>
       )}
 

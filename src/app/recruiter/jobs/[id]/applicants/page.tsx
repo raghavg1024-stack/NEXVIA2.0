@@ -57,7 +57,7 @@ export default async function ApplicantsPage({ params }: { params: { id: string 
               <div className="flex items-center gap-4">
                 {app.profiles?.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={app.profiles.avatar_url} alt="Avatar" className="h-12 w-12 rounded-full" />
+                  <img src={app.profiles.avatar_url} alt={`${app.profiles?.full_name || "Applicant"} profile photo`} className="h-12 w-12 rounded-full" />
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 text-slate-400">
                     <User className="h-6 w-6" />

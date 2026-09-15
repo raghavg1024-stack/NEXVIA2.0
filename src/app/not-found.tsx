@@ -10,12 +10,11 @@ export default function NotFound() {
       <p className="mt-3 max-w-md text-slate-400">
         The page you are looking for does not exist or has been moved.
       </p>
-      <Link
-        href="/"
-        className="mt-8 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110"
-      >
-        Go home
-      </Link>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <Link href="/" className="rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110">Go home</Link>
+        <Link href="/contact" className="rounded-xl border border-white/10 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/5">Contact support</Link>
+      </div>
+      <nav aria-label="Helpful links" className="mt-8 flex flex-wrap justify-center gap-5 text-sm text-slate-400"><Link href="/about" className="hover:text-white">About</Link><Link href="/waitlist" className="hover:text-white">Waitlist</Link><Link href="/#faq" className="hover:text-white">FAQ</Link></nav>
     </div>
   );
 }

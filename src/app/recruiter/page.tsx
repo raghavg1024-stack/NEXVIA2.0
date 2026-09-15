@@ -63,7 +63,7 @@ export default async function RecruiterDashboard() {
           <div className="flex items-center gap-4">
             {company.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={company.logo_url} alt={company.name} className="h-16 w-16 rounded-xl object-cover" />
+              <img src={company.logo_url} alt={`${company.name} company logo`} className="h-16 w-16 rounded-xl object-cover" />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-accent/20 text-accent">
                 <Building2 className="h-8 w-8" />

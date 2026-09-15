@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ArrowRight,
   Brain,
@@ -21,6 +22,13 @@ import {
   StaggerItem,
   TiltCard,
 } from "./_components/motion";
+import { getApprovedReviews } from "@/lib/public-site";
+
+export const metadata: Metadata = {
+  title: "Nexvia — AI Career Roadmaps and Skill-to-Industry Matching",
+  description: "Assess your strengths, choose a career, follow a personalized roadmap, practise interviews, and discover opportunities matched to your path.",
+  alternates: { canonical: "/" },
+};
 
 const pillars = [
   {
@@ -63,9 +71,26 @@ const missionStats = [
   { label: "Collaboration loop", value: "360°", icon: Zap, tone: "text-amber-300" },
 ];
 
-export default function Home() {
+const faqs = [
+  ["How does Nexvia choose a career match?", "Nexvia combines assessment responses, interests, skills, goals, and available evidence. The result is guidance—not a guarantee—and improves as the student adds better information."],
+  ["Can a student change their chosen career?", "Yes. A student can select a different career and Nexvia rebuilds the roadmap and opportunity filters around the new direction."],
+  ["Is AI advice always correct?", "No AI system is perfect. Nexvia explains recommendations, asks for missing context, and keeps final decisions with the student, parent, mentor, or institution."],
+  ["Does Nexvia share student data?", "Nexvia is designed around protected accounts and row-level data access. Sensitive information should only be collected with consent and used for the stated career-support purpose."],
+  ["What happens if Gemini or the network is unavailable?", "The interface shows a clear retry message instead of crashing. Core saved profile and roadmap information remains available while AI-dependent responses wait for service recovery."],
+] as const;
+
+export default async function Home() {
+  const reviews = await getApprovedReviews(3);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "Organization", name: "ArticXcoders", url: "https://career-os-mugiwara9.vercel.app", product: { "@type": "SoftwareApplication", name: "Nexvia", applicationCategory: "EducationalApplication", operatingSystem: "Web" } },
+      { "@type": "FAQPage", mainEntity: faqs.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })) },
+    ],
+  };
   return (
     <div className="cinematic-shell relative min-h-screen overflow-hidden bg-[#070a12] text-slate-200">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replaceAll("<", "\\u003c") }} />
       <ScrollProgress />
       <div className="neo-grid pointer-events-none absolute inset-x-0 top-0 h-[920px]" aria-hidden="true" />
       <div className="cinematic-orb cinematic-orb-one" aria-hidden="true" />
@@ -81,9 +106,10 @@ export default function Home() {
           </Link>
         </Reveal>
         <nav className="hidden items-center gap-8 text-sm text-slate-400 md:flex">
-          <a href="#experience" className="nav-underline transition hover:text-white">Experience</a>
+          <Link href="/about" className="nav-underline transition hover:text-white">About</Link>
           <a href="#journey" className="nav-underline transition hover:text-white">How it works</a>
-          <a href="#features" className="nav-underline transition hover:text-white">Features</a>
+          <a href="#faq" className="nav-underline transition hover:text-white">FAQ</a>
+          <Link href="/contact" className="nav-underline transition hover:text-white">Contact</Link>
         </nav>
         <Reveal direction="right">
           <div className="flex items-center gap-3">
@@ -112,6 +138,7 @@ export default function Home() {
                   <Link href="/signup" className="hero-cta group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(99,80,220,.35)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(99,80,220,.5)]">Start skill mapping <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></Link>
                   <Link href="#experience" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-3.5 text-sm font-semibold text-slate-300 backdrop-blur-md transition hover:border-violet-300/40 hover:bg-white/[0.08] hover:text-white"><Gamepad2 className="h-4 w-4 text-cyan-300" /> See how it works</Link>
                   <Link href="/demo" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.06] px-6 py-3.5 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/[0.12]"><Sparkles className="h-4 w-4" /> Judge demo</Link>
+                  <Link href="/waitlist" className="inline-flex items-center justify-center rounded-2xl border border-violet-300/20 px-6 py-3.5 text-sm font-semibold text-violet-100 transition hover:bg-violet-400/10">Join pilot waitlist</Link>
                 </div>
               </Reveal>
               <Reveal delay={0.34}>
@@ -178,6 +205,16 @@ export default function Home() {
 
         <section id="features" className="section-depth mx-auto w-full max-w-7xl scroll-mt-24 px-5 pb-24 pt-20 text-center sm:px-8 lg:px-12">
           <Reveal direction="scale"><div className="cta-stage relative overflow-hidden rounded-[2rem] border border-violet-300/20 px-5 py-16 sm:px-10"><div className="relative z-10"><span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-cyan-200"><Users className="h-6 w-6" /></span><p className="mt-5 text-xs font-bold uppercase tracking-[.2em] text-slate-400">Built for the whole ecosystem</p><h2 className="mx-auto mt-4 max-w-2xl font-display text-3xl uppercase tracking-tight text-white sm:text-5xl">Make every learner industry-ready.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-slate-300">Connect academic learning to the skill signals, internships, and placements that create real outcomes.</p><Link href="/signup" className="hero-cta mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-100">Create your free account <ArrowRight className="h-4 w-4" /></Link></div></div></Reveal>
+        </section>
+
+        <section className="section-depth mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 lg:px-12">
+          <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-300">Verified user feedback</p><h2 className="mt-3 font-display text-3xl uppercase text-white sm:text-4xl">Reviews we can prove.</h2></div><Link href="/reviews" className="text-sm font-semibold text-violet-300 hover:text-violet-200">View or submit a review →</Link></div>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">{reviews.length ? reviews.map((review) => <article key={review.id} className="glass-panel rounded-3xl p-6"><p className="text-amber-300" aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}</p><blockquote className="mt-4 leading-7 text-slate-200">“{review.review}”</blockquote><p className="mt-5 font-semibold text-white">{review.reviewer_name}</p><p className="text-xs text-slate-500">{review.reviewer_role}</p></article>) : <div className="md:col-span-3 rounded-3xl border border-dashed border-white/15 p-8 text-center text-slate-400">No approved reviews yet. Nexvia will show genuine moderated feedback here after the pilot begins.</div>}</div>
+        </section>
+
+        <section id="faq" className="section-depth mx-auto w-full max-w-4xl scroll-mt-24 px-5 py-20 sm:px-8">
+          <div className="text-center"><p className="text-xs font-bold uppercase tracking-[.2em] text-violet-300">Frequently asked questions</p><h2 className="mt-3 font-display text-3xl uppercase text-white sm:text-4xl">Clear answers before you begin.</h2></div>
+          <div className="mt-8 space-y-3">{faqs.map(([question, answer]) => <details key={question} className="group rounded-2xl border border-white/10 bg-white/[.03] p-5"><summary className="cursor-pointer list-none pr-8 font-semibold text-white marker:hidden">{question}<span className="float-right text-violet-300 group-open:rotate-45">+</span></summary><p className="mt-4 max-w-3xl leading-7 text-slate-400">{answer}</p></details>)}</div>
         </section>
       </main>
     </div>

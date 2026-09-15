@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./_components/logout-button";
 import { NexviaLogoMark } from "./_components/nexvia-logo";
 import { MobileNav } from "./_components/mobile-nav";
+import { Breadcrumbs } from "./_components/breadcrumbs";
+import { CookieConsent } from "./_components/cookie-consent";
+import { SiteAnalytics } from "./_components/site-analytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://career-os-mugiwara9.vercel.app"),
   title: {
     default: "Nexvia — Academia–Industry Collaboration Portal",
     template: "%s | Nexvia",
@@ -41,7 +45,11 @@ export const metadata: Metadata = {
       "Map skills, close industry gaps, and connect learners to internships and placements.",
     type: "website",
     siteName: "Nexvia",
+    url: "/",
   },
+  alternates: { canonical: "/" },
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/favicon.svg" },
+  robots: { index: true, follow: true },
 };
 
 const navLinks = [
@@ -126,9 +134,13 @@ export default async function RootLayout({
             </div>
           </aside>
         )}
-        <main className={`flex min-w-0 flex-1 flex-col${user ? " xl:pr-64" : ""}`}>{children}</main>
+        <main className={`flex min-w-0 flex-1 flex-col${user ? " xl:pr-64" : ""}`}>
+          <Breadcrumbs />
+          {children}
+        </main>
         <footer className={`border-t border-line bg-background${user ? " xl:pr-64" : ""}`}>
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-10 sm:flex-row sm:justify-between sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-10 sm:px-6">
+            <div className="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
             <div className="flex items-center gap-2.5">
               <NexviaLogoMark href={user ? "/dashboard" : "/"} />
             </div>
@@ -136,8 +148,14 @@ export default async function RootLayout({
               &copy; {new Date().getFullYear()} Nexvia. Discover Yourself. Learn
               Smarter. Build Your Future.
             </p>
+            </div>
+            <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-500">
+              <Link href="/about" className="hover:text-white">About</Link><Link href="/reviews" className="hover:text-white">Reviews</Link><Link href="/waitlist" className="hover:text-white">Waitlist</Link><Link href="/contact" className="hover:text-white">Contact</Link><Link href="/#faq" className="hover:text-white">FAQ</Link>
+            </nav>
           </div>
         </footer>
+        <CookieConsent />
+        <SiteAnalytics />
       </body>
     </html>
   );

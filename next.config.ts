@@ -34,6 +34,13 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Allows a verification build to run beside a local development server.
   distDir: process.env.NEXVIA_DIST_DIR ?? ".next",
+  experimental: {
+    // Resume PDFs are uploaded through a Server Action. Keep this slightly above
+    // the app's 3 MB file limit to leave room for multipart form metadata.
+    serverActions: {
+      bodySizeLimit: "4mb",
+    },
+  },
   images: {
     remotePatterns: [
       {
