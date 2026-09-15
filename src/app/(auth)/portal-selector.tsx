@@ -24,6 +24,10 @@ export function PortalSelector({ mode }: { mode: "login" | "signup" }) {
             {mode === "login" ? "Sign in through the workspace created for your role." : "Create the account that matches how you will use Nexvia."}
           </p>
         </div>
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-violet-400/25 bg-violet-400/[.08] p-5 sm:flex-row">
+          <div><p className="font-bold text-white">Judging or evaluating Nexvia?</p><p className="mt-1 text-sm text-slate-400">Open the complete read-only student journey without an account.</p></div>
+          <Link href="/demo" className="shrink-0 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-950">Continue as demo student</Link>
+        </div>
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
           {(Object.keys(PORTALS) as PortalKey[]).map((key) => {
             const portal = PORTALS[key];
