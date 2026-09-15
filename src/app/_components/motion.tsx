@@ -37,7 +37,7 @@ export function Reveal({
       initial={initial}
       whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)" }}
       viewport={{ once: true, amount: 0.16, margin: "0px 0px -8% 0px" }}
-      transition={{ duration: 0.36, delay: Math.min(delay, 0.12), ease }}
+      transition={{ duration: 0.58, delay: Math.min(delay, 0.18), ease }}
     >
       {children}
     </motion.div>
@@ -47,7 +47,7 @@ export function Reveal({
 const containerVariants = {
   hidden: {},
   show: {
-    transition: { staggerChildren: 0.035, delayChildren: 0.02 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.04 },
   },
 };
 
@@ -58,7 +58,7 @@ const itemVariants = {
     y: 0,
     scale: 1,
     filter: "blur(0px)",
-    transition: { duration: 0.34, ease },
+    transition: { duration: 0.52, ease },
   },
 };
 

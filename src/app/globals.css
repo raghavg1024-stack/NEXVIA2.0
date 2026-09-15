@@ -4,12 +4,14 @@
 :root {
   --background: #070a12;
   --foreground: #e6eaf2;
-  --accent: #8b7cff;
-  --accent-soft: #17152e;
-  --line: #25253b;
-  --card: #0f1220;
-  --cyan: #45d8ff;
-  --pink: #ff5fba;
+  --accent: #3b82f6;
+  --accent-soft: #10213a;
+  --line: #223047;
+  --card: #0d1524;
+  --cyan: #38bdf8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 }
 
 html {
@@ -30,8 +32,8 @@ html {
 
 body {
   background:
-    radial-gradient(circle at 15% -10%, rgba(112, 92, 255, 0.18), transparent 34rem),
-    radial-gradient(circle at 92% 8%, rgba(69, 216, 255, 0.1), transparent 28rem),
+    radial-gradient(circle at 15% -10%, rgba(37, 99, 235, 0.16), transparent 34rem),
+    radial-gradient(circle at 92% 8%, rgba(56, 189, 248, 0.08), transparent 28rem),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -54,10 +56,10 @@ body::before {
 }
 
 .glass-panel {
-  border: 1px solid rgba(139, 124, 255, 0.2);
-  background: linear-gradient(145deg, rgba(22, 24, 43, 0.88), rgba(10, 12, 24, 0.76));
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: linear-gradient(145deg, rgba(15, 27, 47, 0.94), rgba(8, 15, 28, 0.9));
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.24), inset 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
 }
 
 .cinematic-shell {
@@ -89,8 +91,8 @@ body::before {
   top: 10rem;
   width: 28rem;
   height: 28rem;
-  background: #725cff;
-  animation: ambient-drift-one 18s ease-in-out infinite alternate;
+  background: #2563eb;
+  animation: ambient-drift-one 20s ease-in-out infinite alternate;
 }
 
 .cinematic-orb-two {
@@ -98,8 +100,8 @@ body::before {
   top: 38rem;
   width: 25rem;
   height: 25rem;
-  background: #2dcdf5;
-  animation: ambient-drift-two 22s ease-in-out infinite alternate;
+  background: #38bdf8;
+  animation: ambient-drift-two 24s ease-in-out infinite alternate;
 }
 
 .cinematic-orb-three {
@@ -107,9 +109,9 @@ body::before {
   left: 35%;
   width: 24rem;
   height: 24rem;
-  background: #db4ca8;
-  opacity: 0.11;
-  animation: ambient-drift-one 24s ease-in-out infinite alternate-reverse;
+  background: #1d4ed8;
+  opacity: 0.08;
+  animation: ambient-drift-one 28s ease-in-out infinite alternate-reverse;
 }
 
 .landing-nav {
@@ -121,7 +123,7 @@ body::before {
 
 .brand-cube {
   transform-style: preserve-3d;
-  animation: brand-pulse 5s ease-in-out infinite;
+  animation: brand-pulse 10s ease-in-out infinite;
 }
 
 .nav-underline {
@@ -169,7 +171,7 @@ body::before {
 
 .animated-gradient-text {
   background-size: 200% 200%;
-  animation: gradient-shift 7s ease infinite;
+  animation: gradient-shift 10s ease infinite;
 }
 
 .scroll-cue {
@@ -339,7 +341,7 @@ body::before {
 }
 
 .glow-text {
-  text-shadow: 0 0 28px rgba(139, 124, 255, 0.35);
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.2);
 }
 
 .xp-bar {
@@ -348,19 +350,19 @@ body::before {
 }
 
 .hero-halo {
-  background: conic-gradient(from 220deg, rgba(69, 216, 255, 0.25), rgba(139, 124, 255, 0.35), rgba(255, 95, 186, 0.2), rgba(69, 216, 255, 0.25));
+  background: conic-gradient(from 220deg, rgba(56, 189, 248, 0.22), rgba(59, 130, 246, 0.3), rgba(29, 78, 216, 0.18), rgba(56, 189, 248, 0.22));
   filter: blur(2px);
   opacity: 0.72;
-  animation: halo-breathe 5s ease-in-out infinite;
+  animation: halo-breathe 10s ease-in-out infinite;
 }
 
 .mission-card {
-  animation: card-float 5s ease-in-out infinite;
+  animation: card-float 10s ease-in-out infinite;
 }
 
 .mission-strip {
   border: 1px solid rgba(255, 255, 255, 0.07);
-  background: linear-gradient(100deg, rgba(22, 18, 47, 0.74), rgba(11, 25, 42, 0.72));
+  background: linear-gradient(100deg, rgba(13, 21, 36, 0.94), rgba(10, 24, 41, 0.9));
   box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22), inset 0 1px rgba(255, 255, 255, 0.05);
 }
 
@@ -377,8 +379,8 @@ body::before {
 .cta-stage {
   background:
     radial-gradient(circle at 16% 90%, rgba(69, 216, 255, 0.2), transparent 28%),
-    radial-gradient(circle at 84% 5%, rgba(255, 95, 186, 0.2), transparent 28%),
-    linear-gradient(120deg, rgba(37, 25, 85, 0.88), rgba(12, 24, 49, 0.86));
+    radial-gradient(circle at 84% 5%, rgba(59, 130, 246, 0.16), transparent 28%),
+    linear-gradient(120deg, rgba(15, 31, 58, 0.94), rgba(9, 21, 39, 0.92));
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.08);
 }
 
@@ -416,7 +418,18 @@ body::before {
 .lift-card:hover {
   transform: translateY(-5px);
   border-color: rgba(139, 124, 255, 0.55);
-  box-shadow: 0 20px 50px rgba(4, 5, 14, 0.5), 0 0 30px rgba(139, 124, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(4, 8, 18, 0.38);
+}
+
+.demo-flow-line {
+  transform-origin: left;
+  animation: demo-line-grow 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.demo-flow-step {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: demo-step-unlock 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -535,23 +548,32 @@ body::before {
 }
 
 .animate-cube-spin {
-  animation: cube-spin 14s linear infinite;
+  animation: cube-spin 22s linear infinite;
 }
 
 .animate-float-y {
-  animation: float-y 6s ease-in-out infinite;
+  animation: float-y 10s ease-in-out infinite;
 }
 
 .animate-orbit-ring {
-  animation: orbit-ring 10s linear infinite;
+  animation: orbit-ring 18s linear infinite;
 }
 
 .animate-orbit-ring-reverse {
-  animation: orbit-ring-reverse 14s linear infinite;
+  animation: orbit-ring-reverse 24s linear infinite;
 }
 
 .animate-grid-scroll {
-  animation: grid-scroll 1.2s linear infinite;
+  animation: grid-scroll 4s linear infinite;
+}
+
+@keyframes demo-line-grow {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes demo-step-unlock {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 767px) {

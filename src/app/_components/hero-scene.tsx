@@ -77,13 +77,13 @@ function GridFloor() {
 }
 
 const PARTICLES = [
-  { left: "12%", delay: "0s", duration: "7s", size: 6 },
-  { left: "24%", delay: "1.2s", duration: "8s", size: 4 },
-  { left: "38%", delay: "2.4s", duration: "6.5s", size: 5 },
-  { left: "55%", delay: "0.6s", duration: "9s", size: 3 },
-  { left: "68%", delay: "1.8s", duration: "7.5s", size: 6 },
-  { left: "80%", delay: "3s", duration: "8.5s", size: 4 },
-  { left: "90%", delay: "0.9s", duration: "7s", size: 5 },
+  { left: "12%", delay: "0s", duration: "11s", size: 6 },
+  { left: "24%", delay: "1.8s", duration: "12s", size: 4 },
+  { left: "38%", delay: "3s", duration: "10s", size: 5 },
+  { left: "55%", delay: "0.8s", duration: "14s", size: 3 },
+  { left: "68%", delay: "2.4s", duration: "12s", size: 6 },
+  { left: "80%", delay: "4s", duration: "13s", size: 4 },
+  { left: "90%", delay: "1.2s", duration: "11s", size: 5 },
 ];
 
 function Particles() {

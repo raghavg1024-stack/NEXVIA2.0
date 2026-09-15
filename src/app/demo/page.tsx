@@ -11,6 +11,7 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
+import { DemoJourneyAnimation } from "./demo-journey";
 
 const matchFactors = [
   { label: "Interests", value: 92 },
@@ -42,6 +43,7 @@ export default function DemoPage() {
         </header>
 
         <nav aria-label="Demo journey" className="mt-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">{demoSteps.map((step, index) => <a key={step} href={`#demo-step-${index + 1}`} className="rounded-xl border border-white/10 bg-white/[.03] p-3 text-xs text-slate-300 transition hover:border-violet-400/40 hover:text-white"><span className="mr-2 font-bold text-violet-300">{index + 1}</span>{step}</a>)}</nav>
+        <DemoJourneyAnimation />
 
         <section id="demo-step-1" className="mt-8 grid scroll-mt-24 gap-5 lg:grid-cols-[.78fr_1.22fr]">
           <article className="rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-400/15 to-card p-6">
