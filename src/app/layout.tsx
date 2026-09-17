@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import Script from "next/script";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./_components/logout-button";
 import { NexviaLogoMark } from "./_components/nexvia-logo";
@@ -8,6 +9,7 @@ import { MobileNav } from "./_components/mobile-nav";
 import { Breadcrumbs } from "./_components/breadcrumbs";
 import { CookieConsent } from "./_components/cookie-consent";
 import { SiteAnalytics } from "./_components/site-analytics";
+import { ThemeToggle } from "./_components/theme-toggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -94,8 +96,13 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="bridge-growth min-h-full flex flex-col bg-background text-foreground">
+        <Script id="nexvia-theme-init" strategy="beforeInteractive">
+          {`try{const saved=localStorage.getItem("nexvia-theme");const theme=saved==="light"||saved==="dark"?saved:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}catch{document.documentElement.dataset.theme="light"}`}
+        </Script>
+        <ThemeToggle />
         {user && (
           <header className="industry-header sticky top-0 z-40 border-b border-blue-300/15 shadow-[0_10px_35px_rgba(15,23,42,.16)] backdrop-blur-xl">
             <nav className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8" aria-label="Primary navigation">

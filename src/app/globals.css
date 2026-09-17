@@ -571,6 +571,179 @@ body::before {
   color: #bfdbfe;
 }
 
+.theme-choice-active {
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+:root[data-theme="dark"] {
+  --background: #070a12;
+  --foreground: #e6eaf2;
+  --accent: #8b7cff;
+  --accent-soft: #17152e;
+  --line: #25253b;
+  --card: #0f1220;
+  --cyan: #45d8ff;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 15% -10%, rgba(112, 92, 255, 0.18), transparent 34rem),
+    radial-gradient(circle at 92% 8%, rgba(69, 216, 255, 0.1), transparent 28rem),
+    var(--background);
+}
+
+:root[data-theme="dark"] body::before {
+  opacity: 0.16;
+}
+
+:root[data-theme="dark"] .glass-panel {
+  border-color: rgba(139, 124, 255, 0.2);
+  background: linear-gradient(145deg, rgba(22, 24, 43, 0.9), rgba(10, 12, 24, 0.82));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="dark"] .cinematic-vignette {
+  background:
+    linear-gradient(to bottom, rgba(7, 10, 18, 0.04), rgba(7, 10, 18, 0.44)),
+    radial-gradient(circle at center, transparent 45%, rgba(2, 3, 8, 0.62) 120%);
+}
+
+:root[data-theme="dark"] .cinematic-orb {
+  opacity: 0.2;
+}
+
+:root[data-theme="dark"] .cinematic-orb-two {
+  background: #2dcdf5;
+}
+
+:root[data-theme="dark"] .landing-nav {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.7));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .journey-board {
+  background:
+    linear-gradient(120deg, rgba(23, 17, 52, 0.88), rgba(7, 19, 35, 0.84)),
+    radial-gradient(circle at 75% 20%, rgba(69, 216, 255, 0.12), transparent 35%);
+}
+
+:root[data-theme="dark"] .journey-board::before {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+}
+
+:root[data-theme="dark"] .roadmap-world {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(139, 124, 255, 0.1), transparent 35rem),
+    linear-gradient(180deg, rgba(7, 10, 18, 0.2), rgba(7, 10, 18, 0.82));
+}
+
+:root[data-theme="dark"] .roadmap-route::before {
+  background: repeating-linear-gradient(to bottom, rgba(139, 124, 255, 0.95) 0 12px, rgba(69, 216, 255, 0.25) 12px 24px);
+  box-shadow: 0 0 24px rgba(139, 124, 255, 0.28);
+}
+
+:root[data-theme="dark"] .roadmap-marker {
+  box-shadow: 0 0 0 8px rgba(7, 10, 18, 0.86);
+}
+
+:root[data-theme="dark"] .roadmap-card {
+  background:
+    linear-gradient(145deg, rgba(20, 23, 42, 0.94), rgba(9, 12, 23, 0.9)),
+    radial-gradient(circle at 10% 5%, rgba(139, 124, 255, 0.12), transparent 30%);
+  box-shadow: 0 24px 75px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="dark"] .mission-strip {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: linear-gradient(100deg, rgba(13, 21, 36, 0.96), rgba(10, 24, 41, 0.94));
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22), inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="dark"] .bridge-growth [class*="bg-[#0"] {
+  background-color: #0d1220 !important;
+}
+
+:root[data-theme="dark"] .bridge-growth [class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.045);
+}
+
+:root[data-theme="dark"] .bridge-growth [class*="border-white/"] {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="dark"] .bridge-growth .text-white,
+:root[data-theme="dark"] .bridge-growth .text-slate-100 {
+  color: #f8fafc;
+}
+
+:root[data-theme="dark"] .bridge-growth .text-slate-200 {
+  color: #e2e8f0;
+}
+
+:root[data-theme="dark"] .bridge-growth .text-slate-300 {
+  color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .bridge-growth .text-slate-400 {
+  color: #94a3b8;
+}
+
+:root[data-theme="dark"] .bridge-growth .text-violet-100,
+:root[data-theme="dark"] .bridge-growth .text-violet-200,
+:root[data-theme="dark"] .bridge-growth .text-violet-300,
+:root[data-theme="dark"] .bridge-growth .text-violet-400,
+:root[data-theme="dark"] .bridge-growth .text-indigo-300 {
+  color: #c4b5fd;
+}
+
+:root[data-theme="dark"] .bridge-growth .text-blue-300,
+:root[data-theme="dark"] .bridge-growth .text-cyan-100,
+:root[data-theme="dark"] .bridge-growth .text-cyan-200,
+:root[data-theme="dark"] .bridge-growth .text-cyan-300,
+:root[data-theme="dark"] .bridge-growth .text-cyan-400 {
+  color: #67e8f9;
+}
+
+:root[data-theme="dark"] .bridge-growth .text-emerald-100,
+:root[data-theme="dark"] .bridge-growth .text-emerald-200,
+:root[data-theme="dark"] .bridge-growth .text-emerald-300 {
+  color: #6ee7b7;
+}
+
+:root[data-theme="dark"] .bridge-growth .text-amber-200,
+:root[data-theme="dark"] .bridge-growth .text-amber-300,
+:root[data-theme="dark"] .bridge-growth .text-yellow-300,
+:root[data-theme="dark"] .bridge-growth .text-pink-300 {
+  color: #fcd34d;
+}
+
+:root[data-theme="dark"] .bridge-growth .bg-slate-800,
+:root[data-theme="dark"] .bridge-growth [class*="bg-slate-800/"] {
+  background-color: #1e293b;
+}
+
+:root[data-theme="dark"] .bridge-growth a.bg-accent,
+:root[data-theme="dark"] .bridge-growth button.bg-accent {
+  background-color: #8b7cff;
+}
+
+:root[data-theme="dark"] .bridge-growth a.bg-white,
+:root[data-theme="dark"] .bridge-growth button.bg-white {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme="dark"] .hero-cta.text-white {
+  background: linear-gradient(90deg, #8b5cf6, #6366f1, #06b6d4) !important;
+  color: #ffffff;
+}
+
 .demo-flow-line {
   transform-origin: left;
   animation: demo-line-grow 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
