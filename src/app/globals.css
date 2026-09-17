@@ -2,14 +2,14 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #070a12;
-  --foreground: #e6eaf2;
-  --accent: #3b82f6;
-  --accent-soft: #10213a;
-  --line: #223047;
-  --card: #0d1524;
-  --cyan: #38bdf8;
-  --success: #22c55e;
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  --accent: #1e3a8a;
+  --accent-soft: #e8eef9;
+  --line: #cbd5e1;
+  --card: #ffffff;
+  --cyan: #2563eb;
+  --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
 }
@@ -25,6 +25,30 @@ html {
   --color-accent-soft: var(--accent-soft);
   --color-line: var(--line);
   --color-card: var(--card);
+  --color-violet-100: #dbeafe;
+  --color-violet-200: #bfdbfe;
+  --color-violet-300: #60a5fa;
+  --color-violet-400: #3b82f6;
+  --color-violet-500: #1e3a8a;
+  --color-violet-600: #1e40af;
+  --color-indigo-300: #60a5fa;
+  --color-indigo-400: #3b82f6;
+  --color-indigo-500: #1e3a8a;
+  --color-indigo-600: #1e40af;
+  --color-purple-300: #60a5fa;
+  --color-purple-400: #3b82f6;
+  --color-purple-500: #1e3a8a;
+  --color-fuchsia-300: #34d399;
+  --color-fuchsia-400: #10b981;
+  --color-fuchsia-500: #059669;
+  --color-pink-300: #fbbf24;
+  --color-pink-400: #f59e0b;
+  --color-pink-500: #d97706;
+  --color-cyan-100: #dbeafe;
+  --color-cyan-200: #bfdbfe;
+  --color-cyan-300: #2563eb;
+  --color-cyan-400: #1e3a8a;
+  --color-cyan-500: #1d4ed8;
   --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
   --font-display: var(--font-russo-one), var(--font-geist-sans), sans-serif;
@@ -32,8 +56,8 @@ html {
 
 body {
   background:
-    radial-gradient(circle at 15% -10%, rgba(37, 99, 235, 0.16), transparent 34rem),
-    radial-gradient(circle at 92% 8%, rgba(56, 189, 248, 0.08), transparent 28rem),
+    radial-gradient(circle at 15% -10%, rgba(30, 58, 138, 0.08), transparent 34rem),
+    radial-gradient(circle at 92% 8%, rgba(16, 185, 129, 0.07), transparent 28rem),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -46,20 +70,20 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.16;
+  opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
 }
 
 ::selection {
-  background: rgba(139, 124, 255, 0.45);
+  background: rgba(30, 58, 138, 0.22);
   color: white;
 }
 
 .glass-panel {
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  background: linear-gradient(145deg, rgba(15, 27, 47, 0.94), rgba(8, 15, 28, 0.9));
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.24), inset 0 1px rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(14px);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 45px rgba(30, 58, 138, 0.09);
+  backdrop-filter: blur(12px);
 }
 
 .cinematic-shell {
@@ -71,9 +95,7 @@ body::before {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    linear-gradient(to bottom, rgba(7, 10, 18, 0.04), rgba(7, 10, 18, 0.44)),
-    radial-gradient(circle at center, transparent 45%, rgba(2, 3, 8, 0.62) 120%);
+  background: radial-gradient(circle at center, transparent 52%, rgba(30, 58, 138, 0.06) 120%);
 }
 
 .cinematic-orb {
@@ -82,7 +104,7 @@ body::before {
   border-radius: 9999px;
   pointer-events: none;
   filter: blur(95px);
-  opacity: 0.2;
+  opacity: 0.1;
   will-change: transform;
 }
 
@@ -100,7 +122,7 @@ body::before {
   top: 38rem;
   width: 25rem;
   height: 25rem;
-  background: #38bdf8;
+  background: #10b981;
   animation: ambient-drift-two 24s ease-in-out infinite alternate;
 }
 
@@ -115,9 +137,9 @@ body::before {
 }
 
 .landing-nav {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(to bottom, rgba(7, 10, 18, 0.88), rgba(7, 10, 18, 0.62));
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+  background: rgba(248, 250, 252, 0.9);
+  box-shadow: 0 12px 35px rgba(30, 58, 138, 0.07);
   backdrop-filter: blur(22px) saturate(130%);
 }
 
@@ -203,8 +225,8 @@ body::before {
 .journey-board {
   position: relative;
   background:
-    linear-gradient(120deg, rgba(23, 17, 52, 0.85), rgba(7, 19, 35, 0.78)),
-    radial-gradient(circle at 75% 20%, rgba(69, 216, 255, 0.12), transparent 35%);
+    linear-gradient(120deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.96)),
+    radial-gradient(circle at 75% 20%, rgba(16, 185, 129, 0.09), transparent 35%);
 }
 
 .journey-board::before {
@@ -212,15 +234,15 @@ body::before {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(30, 58, 138, 0.13) 1px, transparent 1px);
   background-size: 22px 22px;
   mask-image: linear-gradient(90deg, transparent 30%, black 70%);
 }
 
 .roadmap-world {
   background:
-    radial-gradient(circle at 50% 0%, rgba(139, 124, 255, 0.1), transparent 35rem),
-    linear-gradient(180deg, rgba(7, 10, 18, 0.2), rgba(7, 10, 18, 0.82));
+    radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.08), transparent 35rem),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.35), rgba(241, 245, 249, 0.92));
 }
 
 .roadmap-route {
@@ -239,8 +261,8 @@ body::before {
   width: 3px;
   transform: translateX(-50%);
   border-radius: 9999px;
-  background: repeating-linear-gradient(to bottom, rgba(139, 124, 255, 0.95) 0 12px, rgba(69, 216, 255, 0.25) 12px 24px);
-  box-shadow: 0 0 24px rgba(139, 124, 255, 0.28);
+  background: repeating-linear-gradient(to bottom, rgba(30, 58, 138, 0.95) 0 12px, rgba(16, 185, 129, 0.35) 12px 24px);
+  box-shadow: 0 0 20px rgba(30, 58, 138, 0.16);
   animation: route-flow 3s linear infinite;
 }
 
@@ -277,7 +299,7 @@ body::before {
   justify-content: center;
   border-width: 2px;
   border-radius: 9999px;
-  box-shadow: 0 0 0 8px rgba(7, 10, 18, 0.86);
+  box-shadow: 0 0 0 8px rgba(248, 250, 252, 0.94);
 }
 
 .roadmap-connector {
@@ -300,10 +322,8 @@ body::before {
 }
 
 .roadmap-card {
-  background:
-    linear-gradient(145deg, rgba(20, 23, 42, 0.91), rgba(9, 12, 23, 0.84)),
-    radial-gradient(circle at 10% 5%, rgba(139, 124, 255, 0.12), transparent 30%);
-  box-shadow: 0 24px 75px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.04);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  box-shadow: 0 20px 55px rgba(30, 58, 138, 0.1);
   backdrop-filter: blur(20px);
   transform-style: preserve-3d;
 }
@@ -345,8 +365,8 @@ body::before {
 }
 
 .xp-bar {
-  background: linear-gradient(90deg, var(--accent), var(--cyan));
-  box-shadow: 0 0 16px rgba(69, 216, 255, 0.35);
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
 }
 
 .hero-halo {
@@ -361,9 +381,9 @@ body::before {
 }
 
 .mission-strip {
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: linear-gradient(100deg, rgba(13, 21, 36, 0.94), rgba(10, 24, 41, 0.9));
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22), inset 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(30, 58, 138, 0.08);
 }
 
 .journey-node {
@@ -378,9 +398,9 @@ body::before {
 
 .cta-stage {
   background:
-    radial-gradient(circle at 16% 90%, rgba(69, 216, 255, 0.2), transparent 28%),
-    radial-gradient(circle at 84% 5%, rgba(59, 130, 246, 0.16), transparent 28%),
-    linear-gradient(120deg, rgba(15, 31, 58, 0.94), rgba(9, 21, 39, 0.92));
+    radial-gradient(circle at 16% 90%, rgba(16, 185, 129, 0.18), transparent 28%),
+    radial-gradient(circle at 84% 5%, rgba(59, 130, 246, 0.14), transparent 28%),
+    linear-gradient(120deg, #1e3a8a, #0f172a);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.08);
 }
 
@@ -419,6 +439,136 @@ body::before {
   transform: translateY(-5px);
   border-color: rgba(139, 124, 255, 0.55);
   box-shadow: 0 18px 40px rgba(4, 8, 18, 0.38);
+}
+
+.bridge-growth [class*="bg-[#0"] {
+  background-color: #ffffff !important;
+}
+
+.bridge-growth [class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.86);
+}
+
+.bridge-growth [class*="border-white/"] {
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+.bridge-growth .text-white,
+.bridge-growth .text-slate-100,
+.bridge-growth .text-slate-200 {
+  color: #1e293b;
+}
+
+.bridge-growth .text-slate-300 {
+  color: #334155;
+}
+
+.bridge-growth .text-slate-400 {
+  color: #475569;
+}
+
+.bridge-growth .text-violet-100,
+.bridge-growth .text-violet-200,
+.bridge-growth .text-violet-300,
+.bridge-growth .text-violet-400,
+.bridge-growth .text-indigo-300,
+.bridge-growth .text-blue-300,
+.bridge-growth .text-cyan-100,
+.bridge-growth .text-cyan-200,
+.bridge-growth .text-cyan-300,
+.bridge-growth .text-cyan-400 {
+  color: #1e3a8a;
+}
+
+.bridge-growth .text-emerald-100,
+.bridge-growth .text-emerald-200,
+.bridge-growth .text-emerald-300 {
+  color: #047857;
+}
+
+.bridge-growth .text-amber-200,
+.bridge-growth .text-amber-300,
+.bridge-growth .text-yellow-300,
+.bridge-growth .text-pink-300 {
+  color: #b45309;
+}
+
+.bridge-growth .bg-slate-800,
+.bridge-growth [class*="bg-slate-800/"] {
+  background-color: #e2e8f0;
+}
+
+.bridge-growth a.bg-accent,
+.bridge-growth button.bg-accent {
+  background-color: #10b981;
+}
+
+.bridge-growth a.bg-accent:hover,
+.bridge-growth button.bg-accent:hover {
+  background-color: #059669;
+}
+
+.bridge-growth a.bg-white,
+.bridge-growth button.bg-white {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.bridge-growth a.bg-white:hover,
+.bridge-growth button.bg-white:hover {
+  background-color: #059669;
+}
+
+.bridge-growth .bg-accent.text-white,
+.bridge-growth .hero-cta.text-white,
+.bridge-growth [class*="bg-gradient"].text-white,
+.bridge-growth [class*="bg-emerald"].text-white,
+.bridge-growth [class*="bg-blue"].text-white,
+.bridge-growth [class*="bg-violet"].text-white,
+.bridge-growth [class*="bg-indigo"].text-white {
+  color: #ffffff;
+}
+
+.industry-header,
+.industry-sidebar,
+.industry-footer {
+  background: #0f172a !important;
+  color: #ffffff;
+}
+
+.industry-header .text-foreground,
+.industry-sidebar .text-foreground,
+.industry-footer .text-foreground,
+.industry-header .text-white,
+.industry-sidebar .text-white,
+.industry-footer .text-white {
+  color: #ffffff;
+}
+
+.industry-header .text-slate-400,
+.industry-sidebar .text-slate-400,
+.industry-sidebar .text-slate-500,
+.industry-footer .text-slate-500 {
+  color: #cbd5e1;
+}
+
+.industry-header .text-emerald-300,
+.industry-sidebar .text-emerald-300 {
+  color: #6ee7b7;
+}
+
+.cta-stage .text-white {
+  color: #ffffff;
+}
+
+.cta-stage .text-slate-300,
+.cta-stage .text-slate-400 {
+  color: #e2e8f0;
+}
+
+.cta-stage .text-cyan-200,
+.cta-stage .text-cyan-300 {
+  color: #bfdbfe;
 }
 
 .demo-flow-line {

@@ -95,9 +95,9 @@ export default async function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="bridge-growth min-h-full flex flex-col bg-background text-foreground">
         {user && (
-          <header className="sticky top-0 z-40 border-b border-violet-400/10 bg-[#070a12]/80 shadow-[0_10px_40px_rgba(0,0,0,.18)] backdrop-blur-xl">
+          <header className="industry-header sticky top-0 z-40 border-b border-blue-300/15 shadow-[0_10px_35px_rgba(15,23,42,.16)] backdrop-blur-xl">
             <nav className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8" aria-label="Primary navigation">
               <NexviaLogoMark href="/dashboard" />
               <div className="flex items-center gap-3">
@@ -111,7 +111,7 @@ export default async function RootLayout({
           </header>
         )}
         {user && (
-          <aside className="fixed inset-y-[4.5rem] right-0 z-30 hidden w-64 border-l border-violet-400/10 bg-[#090d18]/95 shadow-[-16px_0_45px_rgba(0,0,0,.2)] backdrop-blur-xl xl:flex xl:flex-col" aria-label="Workspace navigation">
+          <aside className="industry-sidebar fixed inset-y-[4.5rem] right-0 z-30 hidden w-64 border-l border-blue-300/15 shadow-[-16px_0_45px_rgba(15,23,42,.16)] xl:flex xl:flex-col" aria-label="Workspace navigation">
             <div className="border-b border-white/[.05] px-5 py-5">
               <p className="text-[10px] font-bold uppercase tracking-[.2em] text-violet-300">Workspace</p>
               <p className="mt-1 text-xs leading-5 text-slate-500">Your career collaboration hub</p>
@@ -122,7 +122,7 @@ export default async function RootLayout({
                   key={link.href}
                   href={link.href}
                   prefetch={false}
-                  className="group flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-400 transition-all hover:bg-violet-400/[0.09] hover:text-violet-100 hover:shadow-[0_8px_18px_rgba(139,124,255,.1)]"
+                  className="group flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-300 transition-all hover:bg-white/10 hover:text-white"
                 >
                   <span className="mr-3 h-1.5 w-1.5 rounded-full bg-slate-700 transition-colors group-hover:bg-cyan-300" aria-hidden="true" />
                   {link.label}
@@ -138,7 +138,7 @@ export default async function RootLayout({
           <Breadcrumbs />
           {children}
         </main>
-        <footer className={`border-t border-line bg-background${user ? " xl:pr-64" : ""}`}>
+        <footer className={`industry-footer border-t border-slate-800 text-white${user ? " xl:pr-64" : ""}`}>
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-10 sm:px-6">
             <div className="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
             <div className="flex items-center gap-2.5">
@@ -150,7 +150,7 @@ export default async function RootLayout({
             </p>
             </div>
             <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-500">
-              <Link href="/about" className="hover:text-white">About</Link><Link href="/reviews" className="hover:text-white">Reviews</Link><Link href="/waitlist" className="hover:text-white">Waitlist</Link><Link href="/contact" className="hover:text-white">Contact</Link><Link href="/#faq" className="hover:text-white">FAQ</Link>
+              <Link href="/about" className="hover:text-emerald-300">About</Link><Link href="/reviews" className="hover:text-emerald-300">Reviews</Link><Link href="/waitlist" className="hover:text-emerald-300">Waitlist</Link><Link href="/contact" className="hover:text-emerald-300">Contact</Link><Link href="/#faq" className="hover:text-emerald-300">FAQ</Link>
             </nav>
           </div>
         </footer>

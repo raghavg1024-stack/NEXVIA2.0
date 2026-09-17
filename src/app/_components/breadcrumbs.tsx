@@ -12,7 +12,7 @@ export function Breadcrumbs() {
 
   const segments = pathname.split("/").filter(Boolean);
   return (
-    <nav aria-label="Breadcrumb" className="border-b border-white/[.06] bg-[#090d18]/75 px-5 py-3 text-xs text-slate-400 backdrop-blur-xl">
+    <nav aria-label="Breadcrumb" className="border-b border-slate-200 bg-white/80 px-5 py-3 text-xs text-slate-600 backdrop-blur-xl">
       <ol className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2">
         <li>
           <Link href="/" className="inline-flex items-center gap-1.5 transition hover:text-white">
@@ -27,7 +27,7 @@ export function Breadcrumbs() {
             <li key={href} className="flex items-center gap-2">
               <ChevronRight className="h-3 w-3 text-slate-600" aria-hidden="true" />
               {current ? (
-                <span className="capitalize text-slate-200" aria-current="page">{label}</span>
+                <span className="capitalize font-semibold text-blue-900" aria-current="page">{label}</span>
               ) : (
                 <Link href={href} className="capitalize transition hover:text-white">{label}</Link>
               )}

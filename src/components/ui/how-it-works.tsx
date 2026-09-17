@@ -64,7 +64,7 @@ function StepCard({ step, index }: { step: HowItWorksStep; index: number }) {
     <article
       className={`relative z-10 w-full transition-transform duration-300 hover:z-20 hover:-translate-y-1 md:w-[300px] ${position.rotate} ${position.className}`}
     >
-      <div className="rounded-[24px] border border-white/10 bg-[#0b1322] p-2 shadow-[0_18px_45px_rgba(0,0,0,.25)]">
+      <div className="rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_18px_45px_rgba(30,58,138,.1)]">
         <Pin aria-hidden="true" className={`mx-auto mb-4 mt-1 h-7 w-7 ${tone.text}`} />
         <div className={`min-h-48 rounded-2xl border p-5 ${tone.panel} ${tone.border}`}>
           <span className={`font-display text-3xl ${tone.text}`}>{String(index + 1).padStart(2, "0")}</span>
@@ -88,10 +88,10 @@ export default function HowItWorks({
 
   return (
     <LazyMotion features={domAnimation}>
-      <section className={`relative overflow-hidden rounded-3xl border border-line bg-[#08101d] px-5 py-8 sm:px-8 ${className}`}>
+      <section className={`relative overflow-hidden rounded-3xl border border-line bg-slate-50 px-5 py-8 sm:px-8 ${className}`}>
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[.08] [background-image:linear-gradient(rgba(148,163,184,.45)_1px,transparent_1px)] [background-size:100%_32px]" />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-[#08101d] to-transparent" />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-[#08101d] to-transparent" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-slate-50 to-transparent" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-slate-50 to-transparent" />
 
         <header className="relative z-10 mx-auto max-w-2xl text-center">
           <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-300">{eyebrow}</p>

@@ -11,9 +11,9 @@ export function NexviaLogo({ className = "" }: { className?: string }) {
     >
       <defs>
         <linearGradient id="nexvia-g" x1="0" y1="0" x2="40" y2="40">
-          <stop stopColor="#818cf8" />
-          <stop offset="0.5" stopColor="#a855f7" />
-          <stop offset="1" stopColor="#38bdf8" />
+          <stop stopColor="#1E3A8A" />
+          <stop offset="0.55" stopColor="#2563EB" />
+          <stop offset="1" stopColor="#10B981" />
         </linearGradient>
       </defs>
       <rect width="40" height="40" rx="11" fill="url(#nexvia-g)" />
@@ -42,7 +42,7 @@ export function NexviaLogoMark({
     >
       <span className="relative inline-flex">
         <NexviaLogo className="h-8 w-8" />
-        <span className="pointer-events-none absolute inset-0 rounded-[11px] shadow-[0_0_18px_rgba(129,140,248,0.55)]" />
+        <span className="pointer-events-none absolute inset-0 rounded-[11px] shadow-[0_8px_18px_rgba(30,58,138,0.2)]" />
       </span>
       <span className="text-lg font-bold tracking-tight text-foreground">
         Nexvia

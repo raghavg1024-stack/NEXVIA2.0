@@ -101,7 +101,7 @@ export default async function Home() {
     ],
   };
   return (
-    <div className="cinematic-shell relative min-h-screen overflow-hidden bg-[#070a12] text-slate-200">
+    <div className="cinematic-shell relative min-h-screen overflow-hidden bg-background text-foreground">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replaceAll("<", "\\u003c") }} />
       <ScrollProgress />
       <div className="neo-grid pointer-events-none absolute inset-x-0 top-0 h-[920px]" aria-hidden="true" />
@@ -127,7 +127,7 @@ export default async function Home() {
           <div className="flex items-center gap-3">
             <details className="group relative md:hidden"><summary className="cursor-pointer list-none rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 marker:hidden">Menu</summary><div className="absolute right-0 top-12 z-50 w-48 space-y-1 rounded-2xl border border-white/10 bg-[#0d1220] p-2 shadow-2xl"><a href="#product" className="block rounded-xl px-3 py-2 text-sm text-slate-300 hover:bg-white/5">Product</a><a href="#students" className="block rounded-xl px-3 py-2 text-sm text-slate-300 hover:bg-white/5">Students</a><a href="#colleges" className="block rounded-xl px-3 py-2 text-sm text-slate-300 hover:bg-white/5">Colleges</a><a href="#recruiters" className="block rounded-xl px-3 py-2 text-sm text-slate-300 hover:bg-white/5">Recruiters</a><Link href="/contact" className="block rounded-xl px-3 py-2 text-sm text-slate-300 hover:bg-white/5">Contact</Link></div></details>
             <Link href="/login" className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white sm:inline-flex">Sign in</Link>
-            <Link href="/demo" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-violet-100">View judge demo <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/demo" className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-600">View judge demo <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </Reveal>
       </header>
@@ -147,7 +147,7 @@ export default async function Home() {
               </Reveal>
               <Reveal delay={0.28}>
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                  <Link href="/demo" className="hero-cta group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(99,80,220,.35)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(99,80,220,.5)]"><Gamepad2 className="h-4 w-4" /> View judge demo <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></Link>
+                  <Link href="/demo" className="hero-cta group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(16,185,129,.24)] transition hover:-translate-y-0.5 hover:from-emerald-600 hover:to-emerald-700"><Gamepad2 className="h-4 w-4" /> View judge demo <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></Link>
                   <Link href="/waitlist" className="inline-flex items-center justify-center rounded-2xl border border-violet-300/30 bg-violet-400/[.07] px-6 py-3.5 text-sm font-semibold text-violet-100 transition hover:bg-violet-400/15">Join pilot waitlist</Link>
                 </div>
               </Reveal>

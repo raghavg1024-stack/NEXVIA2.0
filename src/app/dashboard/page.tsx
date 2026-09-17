@@ -126,7 +126,7 @@ function LevelRing({ level, progress }: { level: number; progress: number }) {
           cy="60"
           r={r}
           fill="none"
-          stroke="var(--accent)"
+          stroke="var(--warning)"
           strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -279,7 +279,7 @@ export default async function DashboardPage() {
             <div className="mt-3">
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-accent to-violet-500 transition-all duration-500"
+                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
