@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { levelFromXp, xpForLevel } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { Reveal, Stagger, StaggerItem } from "../_components/motion";
+import HowItWorks, { type HowItWorksStep } from "@/components/ui/how-it-works";
 
 const quickActions = [
   {
@@ -74,6 +75,34 @@ const quickActions = [
     description: "Update your goals and learning style.",
     icon: "●",
     gradient: "from-teal-500 to-emerald-400",
+  },
+];
+
+const nexviaJourney: HowItWorksStep[] = [
+  {
+    title: "Complete your profile",
+    description: "Add your interests, current skills, education and career goals so Nexvia understands your starting point.",
+    tone: "cyan",
+  },
+  {
+    title: "Take the assessment",
+    description: "Answer the career questions honestly to identify your strengths, work preferences and best-fit career paths.",
+    tone: "blue",
+  },
+  {
+    title: "Choose your direction",
+    description: "Review each explained career match, compare alternatives and select the career you want to pursue.",
+    tone: "amber",
+  },
+  {
+    title: "Follow your roadmap",
+    description: "Start the first unlocked activity, finish its learning task and mark it complete to unlock the next step.",
+    tone: "blue",
+  },
+  {
+    title: "Prove your readiness",
+    description: "Build projects, improve your resume, practise interviews and apply to opportunities matched to your chosen field.",
+    tone: "green",
   },
 ];
 
@@ -348,6 +377,10 @@ export default async function DashboardPage() {
           </section>
         </Reveal>
       )}
+
+      <Reveal className="mt-12">
+        <HowItWorks steps={nexviaJourney} />
+      </Reveal>
 
       {/* Quick actions */}
       <Reveal className="mt-12 flex items-baseline gap-4">
